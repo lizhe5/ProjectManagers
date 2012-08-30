@@ -1,7 +1,7 @@
 ;(function() {
 
 	/**
-	 * Component: MainContent
+	 * Component: ProjectList
 	 *
 	 * Responsibilities:
 	 *   - The Main Screen of the application.
@@ -15,42 +15,39 @@
 	 *  - none
 	 *
 	 * Component Events:
-	 *  - MainContent_DO_SHOW_CHARITIES: Show the charities 
+	 *  - ProjectList_DO_SHOW_CHARITIES: Show the charities
 	 *  - ..TODO: put the other DO_SHOW_ events here ...
-	 *  - MainContent_DO_CLOSE_POPUP
+	 *  - ProjectList_DO_CLOSE_POPUP
 	 *
 	 */
 	(function($) {
 
 		// --------- Component Interface Implementation ---------- //
-		function MainContent() {
+		function ProjectList() {
 		};
 
-		MainContent.prototype.create = function(data, config) {
-			var html = $("#tmpl-MainContent").render({});
+		ProjectList.prototype.create = function(data, config) {
+			var html = $("#tmpl-ProjectList").render(data);
 			var $e = $(html);
 			return $e;
 		}
 
 
-		MainContent.prototype.postDisplay = function(data, config) {
+		ProjectList.prototype.postDisplay = function(data, config) {
 			var c = this;
 			var $e = c.$element;
+			app.actions.getProjectList().done(function(extraData) {
+				var $html = $("#tmpl-ProjectList-item").render(extraData.projectList);
+				$e.find(".projectListContain").html($html);
+			});
+
 			
-			$e.on("btap", '.saveBtn', function(event) {
-					var id =  $e.find("input[name='id']").val();
-					var subject = $e.find("input[name='subject']").val();
-					var desc  =  $e.find("input[name='description']").val();
-					app.actions.createProject(id, subject,desc).done(function(extraData) {
-						alert("OK");
-					});
-				});
-			}
+		}
 
 		// --------- /Component Interface Implementation ---------- //
 
 		// --------- Component Public API --------- //
-		MainContent.prototype.methodOne = function(someArgs) {
+		ProjectList.prototype.methodOne = function(someArgs) {
 		}
 
 		// --------- /Component Public API --------- //
@@ -64,9 +61,10 @@
 		// --------- /Component Private Methods --------- //
 
 		// --------- Component Registration --------- //
-		brite.registerComponent("MainContent", {loadTmpl:true},
-		function() {
-			return new MainContent();
+		brite.registerComponent("ProjectList", {
+			loadTmpl : true
+		}, function() {
+			return new ProjectList();
 		});
 		// --------- Component Registration --------- //
 

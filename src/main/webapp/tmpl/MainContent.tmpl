@@ -1,5 +1,48 @@
 <script id="tmpl-MainContent" type="text/html">
 	<div class="MainContent">
-		Content
+		<form class="form-horizontal">
+			<legend>Information  <button class="btn btn-primary saveBtn" type="button">Save</button></legend>
+  <div class="control-group">
+    <label class="control-label">Subject</label>
+    <div class="controls">
+    	<input type="hidden" name="id" value="{{:id}}">
+      <input type="text" name="subject" placeholder="Subject" class="input-xxlarge" value="{{:subject}}">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="inputPassword">Description</label>
+    <div class="controls">
+    	<textarea rows="3" class="input-xxlarge" name="desc" value="{{:description}}"></textarea>
+    </div>
+  </div>
+  <legend>Task list <button class="btn btn-mini btn-primary addBtn" type="button">+</button></legend>
+  <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Title</th>
+                  <th>Start Time</th>
+                  <th>End Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1</td>
+                  <td>Mark</td>
+                  <td>Otto</td>
+                  <td>@mdo</td>
+                </tr>
+              </tbody>
+            </table>
+</form>
 	</div>
     </script>
+    
+<script id="tmpl-MainContent-Task-item" type="text/html">
+	 <tr>
+                  <td>1</td>
+                  <td>Mark</td>
+                  <td>Otto</td>
+                  <td>@mdo</td>
+                </tr>
+	</script>

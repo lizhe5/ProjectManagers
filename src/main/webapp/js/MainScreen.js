@@ -37,6 +37,7 @@
 			var c = this;
 			var $e = c.$element;
 			
+			brite.display("ProjectList",null,{parent:c.$element.find(".left-content")});
 			brite.display("MainContent",null,{parent:c.$element.find(".main-content")});
 			
 			// bind any btap on a element with data-do="MainScreen_DO" to a 
