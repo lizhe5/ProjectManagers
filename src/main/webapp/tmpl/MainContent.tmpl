@@ -25,24 +25,53 @@
                   <th>End Time</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr>
-                  <td>1</td>
-                  <td>Mark</td>
-                  <td>Otto</td>
-                  <td>@mdo</td>
-                </tr>
+              <tbody class="taskListContain">
               </tbody>
             </table>
 </form>
 	</div>
+	<div class="modal hide" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+			×
+		</button>
+		<h3 id="myModalLabel">Task Detail</h3>
+	</div>
+	<div class="modal-body">
+		<div class="control-group">
+    <label class="control-label">Title</label>
+    <div class="controls">
+    	<input type="hidden" name="taskId" value="{{:taskId}}">
+      <input type="text" name="title" placeholder="Title" class="input-xxlarge" value="{{:title}}">
+    </div>
+  </div>
+  		<div class="control-group">
+    <label class="control-label">Status</label>
+    <div class="controls">
+    	<select name="status">
+  <option>Start</option>
+  <option>End</option>
+</select>
+    </div>
+  </div>
+  
+	</div>
+	<div class="modal-footer">
+		<button class="btn closeBtn" data-dismiss="modal" aria-hidden="true">
+			Close
+		</button>
+		<button class="btn btn-primary saveTaskBtn">
+			Save changes
+		</button>
+	</div>
+</div>
     </script>
     
 <script id="tmpl-MainContent-Task-item" type="text/html">
 	 <tr>
-                  <td>1</td>
-                  <td>Mark</td>
-                  <td>Otto</td>
-                  <td>@mdo</td>
+                  <td>{{:id}}</td>
+                  <td>{{:title}}</td>
+                  <td>{{:startTime}}</td>
+                  <td>{{:endTime}}</td>
                 </tr>
 	</script>

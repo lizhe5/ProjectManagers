@@ -47,18 +47,6 @@
 				var doEventName = $target.attr("data-do");
 				$target.trigger(doEventName);
 			});
-						
-			
-			// --------- Handle MainScreen_DO_ events --------- //
-			
-			$e.on("MainScreen_DO_SHOW_ADMIN",function(event){
-				brite.display("Admin",null,{});
-			});
-			
-			
-			// TODO add other action event handling
-			// --------- /Handle MainScreen_DO_ events --------- //
-
 		}
 
 		// --------- /Component Interface Implementation ---------- //

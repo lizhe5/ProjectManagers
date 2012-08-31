@@ -36,18 +36,31 @@
 		ProjectList.prototype.postDisplay = function(data, config) {
 			var c = this;
 			var $e = c.$element;
-			app.actions.getProjectList().done(function(extraData) {
-				var $html = $("#tmpl-ProjectList-item").render(extraData.projectList);
-				$e.find(".projectListContain").html($html);
-			});
-
 			
+			
+			$e.on("btap",".item",function(){
+				var id = $(this).attr("data-value");
+				$e.find(".projectListContain").find("li").removeClass("active");
+				$(this).addClass("active");
+				brite.display("MainContent",{id:id});
+			});
+			
+			$e.on("btap",".newBtn",function(){
+				brite.display("MainContent");
+			});
+			c.refresh.call(c);
 		}
 
 		// --------- /Component Interface Implementation ---------- //
 
 		// --------- Component Public API --------- //
-		ProjectList.prototype.methodOne = function(someArgs) {
+		ProjectList.prototype.refresh = function() {
+			var c = this;
+			var $e = c.$element;
+			brite.dao.list("Project").done(function(projectList){
+				var $html = $("#tmpl-ProjectList-item").render(projectList);
+				$e.find(".projectListContain").html($html);
+			});
 		}
 
 		// --------- /Component Public API --------- //
