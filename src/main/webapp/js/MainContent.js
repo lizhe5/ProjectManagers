@@ -32,9 +32,10 @@
 			var createDfd = $.Deferred();
 			data = data || {};
 			if (data.id) {
-				brite.dao.get("Project", data.id).done(function(project) {
+				brite.dao.invoke("getProjectById", "Project", data.id).done(function(project) {
 					dfd.resolve(project);
 				});
+
 			} else {
 				dfd.resolve({});
 			}
@@ -83,26 +84,58 @@
 				}
 			});
 			$e.on("btap", '.addBtn', function(event) {
-				$('#myModal').show();
+				var id = $e.find("input[name='id']").val();
+				if (id != "") {
+					$('#myModal').show();
+				} else {
+					var subject = $e.find("input[name='subject']");
+					if (subject.val() == "") {
+						alert("Please input subject");
+					} else {
+						var desc = $e.find("input[name='description']").val();
+						var data = {
+							subject : subject.val(),
+							description : desc
+						};
+						brite.dao.create("Project", data).done(function() {
+							var p = $(document).bFindComponents("ProjectList");
+							if (p && p.length > 0) {
+								p[0].refresh();
+							}
+							$('#myModal').show();
+						});
+
+					};
+				};
 			});
-			
+
 			$e.on("btap", '.closeBtn', function(event) {
 				$('#myModal').hide();
 			});
-			
+
 			$e.on("btap", '.saveTaskBtn', function(event) {
+				var projectId = $e.find("input[name='id']").val();
+				var status = $e.find("select[name='status']").val();
 				var title = $('#myModal').find("input[name='title']").val();
-				var data = {title:title};
-				var $html = $("#tmpl-MainContent-Task-item").render(data);
-				$e.find(".taskListContain").append($html);
-				$('#myModal').hide();
+				brite.dao.invoke("updateTask", "Task", projectId, title,status).done(function() {
+					c.refresh();
+					$('#myModal').hide();
+				});
 			});
 		}
 
 		// --------- /Component Interface Implementation ---------- //
 
 		// --------- Component Public API --------- //
-		MainContent.prototype.methodOne = function(someArgs) {
+		MainContent.prototype.refresh = function() {
+			var c = this;
+			var $e = c.$element;
+			var projectId = $e.find("input[name='id']").val();
+
+			brite.dao.invoke("getProjectById", "Project", projectId).done(function(project) {
+				var html = $("#tmpl-MainContent").render(project);
+				$e.html(html);
+			});
 		}
 
 		// --------- /Component Public API --------- //

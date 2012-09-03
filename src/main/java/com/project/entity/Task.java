@@ -1,12 +1,13 @@
 package com.project.entity;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "project")
+@Table(name = "task")
 public class Task extends BaseEntity {
     private String title;
     private Date   startTime;
@@ -14,6 +15,22 @@ public class Task extends BaseEntity {
     private Date   endTime;
 
     private Long   projectId;
+
+    public String getStartTimeView() {
+        if (startTime == null) {
+            return "";
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(startTime);
+    };
+
+    public String getEndTimeView() {
+        if (endTime == null) {
+            return "";
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(endTime);
+    };
 
     public String getTitle() {
         return title;

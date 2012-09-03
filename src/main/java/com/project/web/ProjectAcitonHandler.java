@@ -1,6 +1,5 @@
 package com.project.web;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +27,12 @@ public class ProjectAcitonHandler {
         String hql = "from Project";
         List reList = projectDao.search(hql);
         m.put("projectList", reList);
+    }
+
+    @WebModelHandler(startsWith = "/getProjectById")
+    public void getProjectById(@WebModel Map m, @WebParam("id") Long id) {
+        Project po = projectDao.getProjectById(id);
+        m.put("result", po);
     }
 
     @WebActionHandler(name = "createProject")

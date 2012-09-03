@@ -6,7 +6,7 @@
     <label class="control-label">Subject</label>
     <div class="controls">
     	<input type="hidden" name="id" value="{{:id}}">
-      <input type="text" name="subject" placeholder="Subject" class="input-xxlarge" value="{{:subject}}">
+      <input type="text" name="subject" placeholder="Subject" class="input-xxlarge" value="{{:subject}}" requestFocus>
     </div>
   </div>
   <div class="control-group">
@@ -23,16 +23,33 @@
                   <th>Title</th>
                   <th>Start Time</th>
                   <th>End Time</th>
+                  <th>Status</th>
+                  <th>*</th>
                 </tr>
               </thead>
               <tbody class="taskListContain">
+              	{{for taskList}}
+							 <tr>
+                  <td>{{:id}}</td>
+                  <td>{{:title}}</td>
+                  <td>{{:startTimeView}}</td>
+                  <td>{{:endTimeView}}</td>
+                  <td>{{:status}}</td>
+                  <td><select class="op" data-value="{{:id}}" style="width:100px">
+                  	<option value="">--Choose--</option>
+                  	<option value="end">End</option>
+                  	<option value="del">Del</option>
+                  	</select></td>
+                  
+                </tr>
+						{{/for}}
               </tbody>
             </table>
 </form>
 	</div>
 	<div class="modal hide" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	<div class="modal-header">
-		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+		<button type="button" class="close closeBtn" data-dismiss="modal" aria-hidden="true">
 			×
 		</button>
 		<h3 id="myModalLabel">Task Detail</h3>
