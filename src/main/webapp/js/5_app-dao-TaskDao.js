@@ -24,5 +24,21 @@
 
 	}
 
+	RemoteTaskDao.prototype.opTask = function(objectType, id,op) {
+		var data = {
+			id : id,
+			op : op
+		};
+
+		var dfd = $.ajax({
+			type : "POST",
+			url : "opTask.do",
+			data : data,
+			dataType : "json"
+		}).pipe(function(val) {
+			return val;
+		});
+	}
+
 	app.RemoteTaskDao = RemoteTaskDao;
 })(jQuery); 

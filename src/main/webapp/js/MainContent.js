@@ -40,12 +40,14 @@
 				dfd.resolve({});
 			}
 			dfd.done(function(project) {
-				c.projectId = project.id;
+				if (project.id) {
+					c.projectId = project.id;
+				};
+
 				var html = $("#tmpl-MainContent").render(project);
 				var $e = $(html);
 				createDfd.resolve($e);
 			});
-
 			return createDfd.promise();
 		}
 
@@ -58,31 +60,34 @@
 				var id = $e.find("input[name='id']").val();
 				var subject = $e.find("input[name='subject']").val();
 				var desc = $e.find("input[name='description']").val();
+				if (subject != "") {
+					var data = {
+						id : id,
+						subject : subject,
+						description : desc
+					};
 
-				var data = {
-					id : id,
-					subject : subject,
-					description : desc
+					if (id && id != "") {
+						brite.dao.update("Project", id, data).done(function(project) {
+							refreshList(project.id);
+						});
+					} else {
+						brite.dao.create("Project", data).done(function(project) {
+							refreshList(project.id);
+						});
+					};
 				};
-
-				if (id && id != "") {
-					brite.dao.create("Project", data).done(function() {
-						var p = $(document).bFindComponents("ProjectList");
-						if (p && p.length > 0) {
-							p[0].refresh();
-						}
-						alert("OK");
-					});
-				} else {
-					brite.dao.create("Project", data).done(function() {
-						var p = $(document).bFindComponents("ProjectList");
-						if (p && p.length > 0) {
-							p[0].refresh();
-						}
-						alert("OK");
-					});
-				}
 			});
+
+			$e.on("btap", '.deleteBtn', function(event) {
+				var id = $e.find("input[name='id']").val();
+				if (id && id != "") {
+					brite.dao.remove("Project", id).done(function() {
+						refreshList();
+					});
+				};
+			});
+
 			$e.on("btap", '.addBtn', function(event) {
 				var id = $e.find("input[name='id']").val();
 				if (id != "") {
@@ -94,14 +99,13 @@
 					} else {
 						var desc = $e.find("input[name='description']").val();
 						var data = {
+							id : id,
 							subject : subject.val(),
 							description : desc
 						};
-						brite.dao.create("Project", data).done(function() {
-							var p = $(document).bFindComponents("ProjectList");
-							if (p && p.length > 0) {
-								p[0].refresh();
-							}
+						brite.dao.create("Project", data).done(function(project) {
+							$e.find("input[name='id']").val(project.id);
+							refreshList(project.id);
 							$('#myModal').show();
 						});
 
@@ -117,11 +121,27 @@
 				var projectId = $e.find("input[name='id']").val();
 				var status = $e.find("select[name='status']").val();
 				var title = $('#myModal').find("input[name='title']").val();
-				brite.dao.invoke("updateTask", "Task", projectId, title,status).done(function() {
-					c.refresh();
+				brite.dao.invoke("updateTask", "Task", projectId, title, status).done(function() {
 					$('#myModal').hide();
+					c.refresh();
 				});
 			});
+
+			$e.on("change", '.op', function() {
+				var id = $(this).attr("data-value");
+				var op = $(this).val();
+				brite.dao.invoke("opTask", "Task", id, op).done(function() {
+					c.refresh();
+				});
+			});
+
+			function refreshList(projectId) {
+				var p = $(document).bFindComponents("ProjectList");
+				if (p && p.length > 0) {
+					p[0].refresh(projectId);
+				}
+			}
+
 		}
 
 		// --------- /Component Interface Implementation ---------- //

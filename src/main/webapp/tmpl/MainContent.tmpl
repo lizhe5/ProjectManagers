@@ -1,12 +1,15 @@
 <script id="tmpl-MainContent" type="text/html">
 	<div class="MainContent">
 		<form class="form-horizontal">
-			<legend>Information  <button class="btn btn-primary saveBtn" type="button">Save</button></legend>
+			<legend>Information  
+				<button class="btn btn-primary saveBtn" type="button">Save</button>
+				 <button class="btn btn-primary deleteBtn pull-right btn-warning" type="button">Delete</button>
+			</legend>
   <div class="control-group">
     <label class="control-label">Subject</label>
     <div class="controls">
     	<input type="hidden" name="id" value="{{:id}}">
-      <input type="text" name="subject" placeholder="Subject" class="input-xxlarge" value="{{:subject}}" requestFocus>
+      <input type="text" name="subject" placeholder="Subject" autofocus="autofocus"  class="input-xxlarge" value="{{:subject}}" requestFocus>
     </div>
   </div>
   <div class="control-group">
@@ -19,15 +22,16 @@
   <table class="table table-hover">
               <thead>
                 <tr>
-                  <th>#</th>
-                  <th>Title</th>
-                  <th>Start Time</th>
-                  <th>End Time</th>
-                  <th>Status</th>
-                  <th>*</th>
+                  <th style="width: 8%">#</th>
+                  <th style="width: 40%">Title</th>
+                  <th style="width: 12%">Start Time</th>
+                  <th style="width: 12%">End Time</th>
+                  <th style="width: 10%">Status</th>
+                  <th style="width: 10%">*</th>
                 </tr>
               </thead>
               <tbody class="taskListContain">
+              	{{if taskList}}
               	{{for taskList}}
 							 <tr>
                   <td>{{:id}}</td>
@@ -43,6 +47,7 @@
                   
                 </tr>
 						{{/for}}
+						{{/if}}
               </tbody>
             </table>
 </form>
@@ -59,7 +64,7 @@
     <label class="control-label">Title</label>
     <div class="controls">
     	<input type="hidden" name="taskId" value="{{:taskId}}">
-      <input type="text" name="title" placeholder="Title" class="input-xxlarge" value="{{:title}}">
+      <input type="text" name="title" placeholder="Title" autofocus="autofocus"  class="input-xxlarge" value="{{:title}}">
     </div>
   </div>
   		<div class="control-group">

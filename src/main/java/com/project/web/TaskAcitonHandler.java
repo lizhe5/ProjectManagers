@@ -42,4 +42,22 @@ public class TaskAcitonHandler {
         }
         return resultMap;
     }
+
+    @WebActionHandler(name = "opTask")
+    public Map opTask(@WebParam("id") Long id, @WebParam("op") String op, RequestContext rc) {
+        Map resultMap = new HashMap();
+        try {
+            Task po = taskDao.get(id);
+            if ("end".equals(op)) {
+                po.setEndTime(new Timestamp(System.currentTimeMillis()));
+                taskDao.update(po);
+            }
+            if ("del".equals(op)) {
+                taskDao.delete(po);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return resultMap;
+    }
 }
