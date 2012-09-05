@@ -49,6 +49,7 @@ public class TaskAcitonHandler {
         try {
             Task po = taskDao.get(id);
             if ("end".equals(op)) {
+                po.setStatus("End");
                 po.setEndTime(new Timestamp(System.currentTimeMillis()));
                 taskDao.update(po);
             }

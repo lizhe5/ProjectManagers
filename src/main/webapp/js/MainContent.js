@@ -132,14 +132,6 @@
 					c.refresh();
 				});
 			});
-
-			function refreshList(projectId) {
-				var p = $(document).bFindComponents("ProjectList");
-				if (p && p.length > 0) {
-					p[0].refresh(projectId);
-				}
-			}
-
 		}
 
 		// --------- /Component Interface Implementation ---------- //
@@ -162,6 +154,13 @@
 		function privateMethodOne() {
 			var c = this;
 
+		}
+
+		function refreshList(projectId) {
+			var p = $(document).bFindComponents("ProjectList");
+			if (p && p.length > 0) {
+				p[0].refresh(projectId);
+			}
 		}
 
 		// --------- /Component Private Methods --------- //
