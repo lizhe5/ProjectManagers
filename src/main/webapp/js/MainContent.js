@@ -43,7 +43,6 @@
 				if (project.id) {
 					c.projectId = project.id;
 				};
-
 				var html = $("#tmpl-MainContent").render(project);
 				var $e = $(html);
 				createDfd.resolve($e);
@@ -59,14 +58,13 @@
 			$e.on("btap", '.saveBtn', function(event) {
 				var id = $e.find("input[name='id']").val();
 				var subject = $e.find("input[name='subject']").val();
-				var desc = $e.find("input[name='description']").val();
+				var desc = $e.find("textarea[name='description']").val();
 				if (subject != "") {
 					var data = {
 						id : id,
 						subject : subject,
 						description : desc
 					};
-
 					if (id && id != "") {
 						brite.dao.update("Project", id, data).done(function(project) {
 							refreshList(project.id);
@@ -97,7 +95,7 @@
 					if (subject.val() == "") {
 						alert("Please input subject");
 					} else {
-						var desc = $e.find("input[name='description']").val();
+						var desc = $e.find("textarea[name='description']").val();
 						var data = {
 							id : id,
 							subject : subject.val(),

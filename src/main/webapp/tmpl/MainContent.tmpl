@@ -2,7 +2,7 @@
 	<div class="MainContent">
 		<form class="form-horizontal">
 			<legend>Information  
-				<button class="btn btn-primary saveBtn" type="button">Save</button>
+				<button class="btn btn-primary saveBtn " type="button">Save</button>
 				 <button class="btn btn-primary deleteBtn pull-right btn-warning" type="button">Delete</button>
 			</legend>
   <div class="control-group">
@@ -15,10 +15,10 @@
   <div class="control-group">
     <label class="control-label" for="inputPassword">Description</label>
     <div class="controls">
-    	<textarea rows="3" class="input-xxlarge" name="desc" value="{{:description}}"></textarea>
+    	<textarea rows="3" class="input-xxlarge" name="description" value="{{:description}}">{{:description}}</textarea>
     </div>
   </div>
-  <legend>Task list <button class="btn btn-mini btn-primary addBtn" type="button">+</button></legend>
+  <legend>Task list <button class="btn btn-mini btn-primary addBtn btn-success" type="button">+</button></legend>
   <table class="table table-hover">
               <thead>
                 <tr>
