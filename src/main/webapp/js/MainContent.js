@@ -141,11 +141,12 @@
 			var c = this;
 			var $e = c.$element;
 			var projectId = $e.find("input[name='id']").val();
-
-			brite.dao.invoke("getProjectById", "Project", projectId).done(function(project) {
-				var html = $("#tmpl-MainContent").render(project);
-				$e.html(html);
-			});
+			setTimeout(function() {
+				brite.dao.invoke("getProjectById", "Project", projectId).done(function(project) {
+					var html = $("#tmpl-MainContent").render(project);
+					$e.html(html);
+				});
+			}, 300)
 		}
 
 		// --------- /Component Public API --------- //
@@ -159,7 +160,10 @@
 		function refreshList(projectId) {
 			var p = $(document).bFindComponents("ProjectList");
 			if (p && p.length > 0) {
-				p[0].refresh(projectId);
+				setTimeout(function() {
+					p[0].refresh(projectId);
+				}, 300)
+
 			}
 		}
 

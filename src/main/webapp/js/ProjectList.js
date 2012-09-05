@@ -61,6 +61,7 @@
 				var $html = $("#tmpl-ProjectList-item").render(projectList);
 				$e.find(".projectListContain").html($html);
 				$e.find("[data-value='"+id+"']").addClass("active");
+				console.log(projectList.length);
 			});
 		}
 
