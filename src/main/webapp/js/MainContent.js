@@ -71,6 +71,7 @@
 						});
 					} else {
 						brite.dao.create("Project", data).done(function(project) {
+							$e.find("input[name='id']").val(project.id);
 							refreshList(project.id);
 						});
 					};
