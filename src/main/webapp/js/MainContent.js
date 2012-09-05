@@ -68,11 +68,13 @@
 					if (id && id != "") {
 						brite.dao.update("Project", id, data).done(function(project) {
 							refreshList(project.id);
+							showMsg(c,"Save success!");
 						});
 					} else {
 						brite.dao.create("Project", data).done(function(project) {
 							$e.find("input[name='id']").val(project.id);
 							refreshList(project.id);
+							showMsg(c,"Save success!");
 						});
 					};
 				};
@@ -123,6 +125,7 @@
 				brite.dao.invoke("updateTask", "Task", projectId, title, status).done(function() {
 					$('#myModal').hide();
 					c.refresh();
+					showMsg(c,"Save success!");
 				});
 			});
 
@@ -131,6 +134,7 @@
 				var op = $(this).val();
 				brite.dao.invoke("opTask", "Task", id, op).done(function() {
 					c.refresh();
+					showMsg(c,"Save success!");
 				});
 			});
 		}
@@ -156,6 +160,17 @@
 		function privateMethodOne() {
 			var c = this;
 
+		}
+
+		function showMsg(c,msg){
+			var $e = c.$element;
+			$e.find(".msg").html(msg).show();
+		}
+
+		function hideMsg(){
+			var c = this;
+			var $e = c.$element;
+			$e.find(".msg").hide();
 		}
 
 		function refreshList(projectId) {
