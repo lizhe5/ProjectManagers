@@ -65,6 +65,10 @@
 			});
 		}
 
+	ProjectList.prototype.refreshContent = function() {
+			brite.display("MainContent");
+		}
+
 		// --------- /Component Public API --------- //
 
 		// --------- Component Private Methods --------- //

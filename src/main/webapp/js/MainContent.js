@@ -179,7 +179,9 @@
 				setTimeout(function() {
 					p[0].refresh(projectId);
 				}, 300)
-
+				if (!projectId) {
+					p[0].refreshContent();
+				};
 			}
 		}
 
