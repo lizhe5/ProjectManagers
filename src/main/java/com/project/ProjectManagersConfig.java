@@ -6,6 +6,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.britesnow.snow.web.WebApplicationLifecycle;
 import com.britesnow.snow.web.binding.EntityClasses;
 import com.britesnow.snow.web.db.hibernate.HibernateDaoHelper;
 import com.britesnow.snow.web.db.hibernate.HibernateDaoHelperImpl;
@@ -17,6 +18,7 @@ import com.google.inject.Singleton;
 import com.metapossum.utils.scanner.reflect.ClassesInPackageScanner;
 import com.project.dao.DaoRegistry;
 import com.project.entity.BaseEntity;
+import com.project.util.HSQLLifeCycle;
 
 /**
  * TODO: Rename the package and the class name to fit your application naming convention and update
@@ -29,7 +31,7 @@ public class ProjectManagersConfig extends AbstractModule {
 
     @Override
     protected void configure() {
-
+        bind(WebApplicationLifecycle.class).to(HSQLLifeCycle.class);
         // Default bind for the HibernateDaoHelper.
         bind(HibernateDaoHelper.class).to(HibernateDaoHelperImpl.class);
     }
