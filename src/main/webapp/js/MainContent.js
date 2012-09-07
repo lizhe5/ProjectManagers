@@ -1,25 +1,12 @@
+/**
+ * Component: MainContent
+ *
+ * Responsibilities:
+ *   - Manage a single project screen
+ *   - Manage the task list of a project
+ *
+ */
 ;(function() {
-
-	/**
-	 * Component: MainContent
-	 *
-	 * Responsibilities:
-	 *   - The Main Screen of the application.
-	 *   - Handle the overall dimension (for now fixed)
-	 *
-	 * Constructor Data:
-	 *   - none
-	 *
-	 * Component API:
-	 *  format: [method_name]([args]) : [concise description]
-	 *  - none
-	 *
-	 * Component Events:
-	 *  - MainContent_DO_SHOW_CHARITIES: Show the charities
-	 *  - ..TODO: put the other DO_SHOW_ events here ...
-	 *  - MainContent_DO_CLOSE_POPUP
-	 *
-	 */
 	(function($) {
 
 		// --------- Component Interface Implementation ---------- //
@@ -59,6 +46,7 @@
 				var id = $e.find("input[name='id']").val();
 				var subject = $e.find("input[name='subject']").val();
 				var desc = $e.find("textarea[name='description']").val();
+				$(".subjectWarning").hide();
 				if (subject != "") {
 					var data = {
 						id : id,
@@ -68,15 +56,17 @@
 					if (id && id != "") {
 						brite.dao.update("Project", id, data).done(function(project) {
 							refreshList(project.id);
-							showMsg(c,"Save success!");
+							showMsg(c, "Save success!");
 						});
 					} else {
 						brite.dao.create("Project", data).done(function(project) {
 							$e.find("input[name='id']").val(project.id);
 							refreshList(project.id);
-							showMsg(c,"Save success!");
+							showMsg(c, "Save success!");
 						});
 					};
+				} else {
+					$(".subjectWarning").show();
 				};
 			});
 
@@ -90,13 +80,14 @@
 			});
 
 			$e.on("btap", '.addBtn', function(event) {
+				$(".subjectWarning").hide();
 				var id = $e.find("input[name='id']").val();
 				if (id != "") {
 					$('#myModal').show();
 				} else {
 					var subject = $e.find("input[name='subject']");
 					if (subject.val() == "") {
-						alert("Please input subject");
+						$(".subjectWarning").show();
 					} else {
 						var desc = $e.find("textarea[name='description']").val();
 						var data = {
@@ -125,7 +116,7 @@
 				brite.dao.invoke("updateTask", "Task", projectId, title, status).done(function() {
 					$('#myModal').hide();
 					c.refresh();
-					showMsg(c,"Save success!");
+					showMsg(c, "Save success!");
 				});
 			});
 
@@ -134,8 +125,15 @@
 				var op = $(this).val();
 				brite.dao.invoke("opTask", "Task", id, op).done(function() {
 					c.refresh();
-					showMsg(c,"Save success!");
+					showMsg(c, "Save success!");
 				});
+			});
+			
+			$('#myModal').on("keyup", function(event){
+				// press ESC
+				if (event.which === 27) {
+					$('#myModal').hide();
+				}				
 			});
 		}
 
@@ -162,12 +160,12 @@
 
 		}
 
-		function showMsg(c,msg){
+		function showMsg(c, msg) {
 			var $e = c.$element;
 			$e.find(".msg").html(msg).show();
 		}
 
-		function hideMsg(){
+		function hideMsg() {
 			var c = this;
 			var $e = c.$element;
 			$e.find(".msg").hide();
@@ -188,7 +186,7 @@
 		// --------- /Component Private Methods --------- //
 
 		// --------- Component Registration --------- //
-		brite.registerComponent("MainContent", {
+		brite.registerView("MainContent", {
 			loadTmpl : true,
 			emptyParent : true,
 			parent : ".main-content"

@@ -1,25 +1,11 @@
+/**
+ * Component: ProjectList
+ *
+ * Responsibilities:
+ *   - Manage the list of project (create, delete, select)
+ *
+ */
 ;(function() {
-
-	/**
-	 * Component: ProjectList
-	 *
-	 * Responsibilities:
-	 *   - The Main Screen of the application.
-	 *   - Handle the overall dimension (for now fixed)
-	 *
-	 * Constructor Data:
-	 *   - none
-	 *
-	 * Component API:
-	 *  format: [method_name]([args]) : [concise description]
-	 *  - none
-	 *
-	 * Component Events:
-	 *  - ProjectList_DO_SHOW_CHARITIES: Show the charities
-	 *  - ..TODO: put the other DO_SHOW_ events here ...
-	 *  - ProjectList_DO_CLOSE_POPUP
-	 *
-	 */
 	(function($) {
 
 		// --------- Component Interface Implementation ---------- //
@@ -36,16 +22,17 @@
 		ProjectList.prototype.postDisplay = function(data, config) {
 			var c = this;
 			var $e = c.$element;
-			
-			
-			$e.on("btap",".item",function(){
+
+			$e.on("btap", ".item", function() {
 				var id = $(this).attr("data-value");
 				$e.find(".projectListContain").find("li").removeClass("active");
 				$(this).addClass("active");
-				brite.display("MainContent",{id:id});
+				brite.display("MainContent", {
+					id : id
+				});
 			});
-			
-			$e.on("btap",".newBtn",function(){
+
+			$e.on("btap", ".newBtn", function() {
 				brite.display("MainContent");
 			});
 			c.refresh.call(c);
@@ -57,15 +44,16 @@
 		ProjectList.prototype.refresh = function(id) {
 			var c = this;
 			var $e = c.$element;
-			brite.dao.list("Project").done(function(projectList){
+			brite.dao.list("Project").done(function(projectList) {
 				var $html = $("#tmpl-ProjectList-item").render(projectList);
 				$e.find(".projectListContain").html($html);
-				$e.find("[data-value='"+id+"']").addClass("active");
+				$e.find("[data-value='" + id + "']").addClass("active");
 				console.log(projectList.length);
 			});
 		}
 
-	ProjectList.prototype.refreshContent = function() {
+
+		ProjectList.prototype.refreshContent = function() {
 			brite.display("MainContent");
 		}
 
@@ -80,7 +68,7 @@
 		// --------- /Component Private Methods --------- //
 
 		// --------- Component Registration --------- //
-		brite.registerComponent("ProjectList", {
+		brite.registerView("ProjectList", {
 			loadTmpl : true
 		}, function() {
 			return new ProjectList();
