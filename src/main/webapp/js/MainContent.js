@@ -19,7 +19,7 @@
 			var createDfd = $.Deferred();
 			data = data || {};
 			if (data.id) {
-				brite.dao.invoke("getProjectById", "Project", data.id).done(function(project) {
+				brite.dao("Project").getProjectById("Project", data.id).done(function(project) {
 					dfd.resolve(project);
 				});
 
@@ -54,14 +54,14 @@
 						description : desc
 					};
 					if (id && id != "") {
-						brite.dao.update("Project", id, data).done(function(project) {
-							refreshList(project.id);
+						brite.dao("Project").update("Project", id, data).done(function(project) {
+							//refreshList(project.id);
 							showMsg(c, "Save success!");
 						});
 					} else {
-						brite.dao.create("Project", data).done(function(project) {
+						brite.dao("Project").create("Project", data).done(function(project) {
 							$e.find("input[name='id']").val(project.id);
-							refreshList(project.id);
+							//refreshList(project.id);
 							showMsg(c, "Save success!");
 						});
 					};
@@ -73,7 +73,7 @@
 			$e.on("btap", '.deleteBtn', function(event) {
 				var id = $e.find("input[name='id']").val();
 				if (id && id != "") {
-					brite.dao.remove("Project", id).done(function() {
+					brite.dao("Project").remove("Project", id).done(function() {
 						refreshList();
 					});
 				};
@@ -95,7 +95,7 @@
 							subject : subject.val(),
 							description : desc
 						};
-						brite.dao.create("Project", data).done(function(project) {
+						brite.dao("Project").create("Project", data).done(function(project) {
 							$e.find("input[name='id']").val(project.id);
 							refreshList(project.id);
 							$('#myModal').show();
@@ -113,7 +113,7 @@
 				var projectId = $e.find("input[name='id']").val();
 				var status = $e.find("select[name='status']").val();
 				var title = $('#myModal').find("input[name='title']").val();
-				brite.dao.invoke("updateTask", "Task", projectId, title, status).done(function() {
+				brite.dao("Task").updateTask("Task", projectId, title, status).done(function() {
 					$('#myModal').hide();
 					c.refresh();
 					showMsg(c, "Save success!");
@@ -123,18 +123,25 @@
 			$e.on("change", '.op', function() {
 				var id = $(this).attr("data-value");
 				var op = $(this).val();
-				brite.dao.invoke("opTask", "Task", id, op).done(function() {
+				brite.dao("Task").opTask("Task", id, op).done(function() {
 					c.refresh();
 					showMsg(c, "Save success!");
 				});
 			});
-			
-			$('#myModal').on("keyup", function(event){
+
+			$('#myModal').on("keyup", function(event) {
 				// press ESC
 				if (event.which === 27) {
 					$('#myModal').hide();
-				}				
+				}
 			});
+
+			// on Project dataChange, if it is this project, update the project part of the screen
+			brite.dao.onDataChange("Project", function(event) {
+				var daoEvent = event.daoEvent;
+				c.project = daoEvent.result;
+				refreshList.call(c.project.id);
+			}, c.id);
 		}
 
 		// --------- /Component Interface Implementation ---------- //
@@ -145,7 +152,7 @@
 			var $e = c.$element;
 			var projectId = $e.find("input[name='id']").val();
 			setTimeout(function() {
-				brite.dao.invoke("getProjectById", "Project", projectId).done(function(project) {
+				brite.dao("Project").getProjectById("Project", projectId).done(function(project) {
 					var html = $("#tmpl-MainContent").render(project);
 					$e.html(html);
 				});

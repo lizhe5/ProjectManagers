@@ -44,7 +44,7 @@
 		ProjectList.prototype.refresh = function(id) {
 			var c = this;
 			var $e = c.$element;
-			brite.dao.list("Project").done(function(projectList) {
+			brite.dao("Project").list("Project").done(function(projectList) {
 				var $html = $("#tmpl-ProjectList-item").render(projectList);
 				$e.find(".projectListContain").html($html);
 				$e.find("[data-value='" + id + "']").addClass("active");
