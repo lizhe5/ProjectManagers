@@ -5,7 +5,7 @@
 	}
 	brite.inherit(RemoteProjectDao,brite.dao.RemoteDao);
 	
-	RemoteProjectDao.prototype.getProjectById = function(objectType,id){
+	RemoteProjectDao.prototype.getProjectById = function(id){
 		var data = {};
 		data.id = id;
 

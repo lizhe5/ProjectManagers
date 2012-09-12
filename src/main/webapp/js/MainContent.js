@@ -19,7 +19,7 @@
 			var createDfd = $.Deferred();
 			data = data || {};
 			if (data.id) {
-				brite.dao("Project").getProjectById("Project", data.id).done(function(project) {
+				brite.dao("Project").getProjectById(data.id).done(function(project) {
 					dfd.resolve(project);
 				});
 
@@ -54,15 +54,10 @@
 						description : desc
 					};
 					if (id && id != "") {
-						brite.dao("Project").update("Project", id, data).done(function(project) {
-							//refreshList(project.id);
-							showMsg(c, "Save success!");
-						});
+						brite.dao("Project").update(data);
 					} else {
-						brite.dao("Project").create("Project", data).done(function(project) {
+						brite.dao("Project").create(data).done(function(project) {
 							$e.find("input[name='id']").val(project.id);
-							//refreshList(project.id);
-							showMsg(c, "Save success!");
 						});
 					};
 				} else {
@@ -73,7 +68,7 @@
 			$e.on("btap", '.deleteBtn', function(event) {
 				var id = $e.find("input[name='id']").val();
 				if (id && id != "") {
-					brite.dao("Project").remove("Project", id).done(function() {
+					brite.dao("Project").remove(id).done(function() {
 						refreshList();
 					});
 				};
@@ -95,7 +90,7 @@
 							subject : subject.val(),
 							description : desc
 						};
-						brite.dao("Project").create("Project", data).done(function(project) {
+						brite.dao("Project").create(data).done(function(project) {
 							$e.find("input[name='id']").val(project.id);
 							refreshList(project.id);
 							$('#myModal').show();
@@ -116,16 +111,14 @@
 				brite.dao("Task").updateTask("Task", projectId, title, status).done(function() {
 					$('#myModal').hide();
 					c.refresh();
-					showMsg(c, "Save success!");
 				});
 			});
 
 			$e.on("change", '.op', function() {
 				var id = $(this).attr("data-value");
 				var op = $(this).val();
-				brite.dao("Task").opTask("Task", id, op).done(function() {
+				brite.dao("Task").opTask(id, op).done(function() {
 					c.refresh();
-					showMsg(c, "Save success!");
 				});
 			});
 
@@ -152,7 +145,7 @@
 			var $e = c.$element;
 			var projectId = $e.find("input[name='id']").val();
 			setTimeout(function() {
-				brite.dao("Project").getProjectById("Project", projectId).done(function(project) {
+				brite.dao("Project").getProjectById(projectId).done(function(project) {
 					var html = $("#tmpl-MainContent").render(project);
 					$e.html(html);
 				});
@@ -167,8 +160,9 @@
 
 		}
 
-		function showMsg(c, msg) {
-			var $e = c.$element;
+		function showMsg(msg) {
+			var c = this;
+			var $e = $(c);
 			$e.find(".msg").html(msg).show();
 		}
 
@@ -186,6 +180,7 @@
 				}, 300)
 				if (!projectId) {
 					p[0].refreshContent();
+					showMsg("Save success!");
 				};
 			}
 		}
