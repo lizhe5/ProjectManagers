@@ -24,7 +24,7 @@
 
 	}
 
-	RemoteTaskDao.prototype.opTask = function(objectType, id,op) {
+	RemoteTaskDao.prototype.opTask = function(id,op) {
 		var data = {
 			id : id,
 			op : op

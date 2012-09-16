@@ -17,18 +17,22 @@ public class Task extends BaseEntity {
     private Long   projectId;
 
     public String getStartTimeView() {
-        if (startTime == null) {
-            return "";
+        String s = "";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        if (startTime != null) {
+            s = sdf.format(startTime);
         }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return sdf.format(startTime);
+        if (endTime != null) {
+            s = s + " to " + sdf.format(endTime);
+        }
+        return s;
     };
 
     public String getEndTimeView() {
         if (endTime == null) {
             return "";
         }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(endTime);
     };
 

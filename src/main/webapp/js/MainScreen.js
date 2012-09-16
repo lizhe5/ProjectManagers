@@ -28,26 +28,18 @@
 			brite.display("ProjectList", null, {
 				parent : c.$element.find(".left-content")
 			});
-			brite.display("MainContent", null, {
-				parent : c.$element.find(".main-content")
-			});
+			// on Project dataChange, if it is this project, update the project part of the screen
+			brite.dao.onDataChange("Project", function(event) {
+				var daoEvent = event.daoEvent;
+				c.project = daoEvent.result;
+				var p = $(document).bFindComponents("ProjectList");
+				if (p && p.length > 0) {
+					p[0].refresh(c.project.id);
+					$e.find(".main-content").empty();
+				}
+			}, c.id);
 		}
-
 		// --------- /Component Interface Implementation ---------- //
-
-		// --------- Component Public API --------- //
-		MainScreen.prototype.methodOne = function(someArgs) {
-		}
-
-		// --------- /Component Public API --------- //
-
-		// --------- Component Private Methods --------- //
-		function privateMethodOne() {
-			var c = this;
-
-		}
-
-		// --------- /Component Private Methods --------- //
 
 		// --------- Component Registration --------- //
 		brite.registerView("MainScreen", {

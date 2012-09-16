@@ -15,26 +15,15 @@
 
 		MainContent.prototype.create = function(data, config) {
 			var c = this;
+			c.projectId = data.id;
 			var dfd = $.Deferred();
-			var createDfd = $.Deferred();
-			data = data || {};
-			if (data.id) {
-				brite.dao("Project").getProjectById(data.id).done(function(project) {
-					dfd.resolve(project);
-				});
 
-			} else {
-				dfd.resolve({});
-			}
-			dfd.done(function(project) {
-				if (project.id) {
-					c.projectId = project.id;
-				};
+			brite.dao("Project").getProjectById(c.projectId).done(function(project) {
 				var html = $("#tmpl-MainContent").render(project);
 				var $e = $(html);
-				createDfd.resolve($e);
+				dfd.resolve($e);
 			});
-			return createDfd.promise();
+			return dfd.promise();
 		}
 
 
@@ -42,62 +31,32 @@
 			var c = this;
 			var $e = c.$element;
 
-			$e.on("btap", '.saveBtn', function(event) {
-				var id = $e.find("input[name='id']").val();
-				var subject = $e.find("input[name='subject']").val();
-				var desc = $e.find("textarea[name='description']").val();
-				$(".subjectWarning").hide();
-				if (subject != "") {
-					var data = {
-						id : id,
-						subject : subject,
-						description : desc
-					};
-					if (id && id != "") {
-						brite.dao("Project").update(data);
-					} else {
-						brite.dao("Project").create(data).done(function(project) {
-							$e.find("input[name='id']").val(project.id);
-						});
-					};
-				} else {
-					$(".subjectWarning").show();
-				};
-			});
-
-			$e.on("btap", '.deleteBtn', function(event) {
-				var id = $e.find("input[name='id']").val();
-				if (id && id != "") {
-					brite.dao("Project").remove(id).done(function() {
-						refreshList();
-					});
-				};
-			});
-
 			$e.on("btap", '.addBtn', function(event) {
 				$(".subjectWarning").hide();
-				var id = $e.find("input[name='id']").val();
-				if (id != "") {
-					$('#myModal').show();
-				} else {
-					var subject = $e.find("input[name='subject']");
-					if (subject.val() == "") {
-						$(".subjectWarning").show();
-					} else {
-						var desc = $e.find("textarea[name='description']").val();
-						var data = {
-							id : id,
-							subject : subject.val(),
-							description : desc
-						};
-						brite.dao("Project").create(data).done(function(project) {
-							$e.find("input[name='id']").val(project.id);
-							refreshList(project.id);
-							$('#myModal').show();
-						});
+				$('#myModal').show();
+			});
 
-					};
-				};
+			$e.on("btap", '.showDeleteBtn', function(event) {
+				// create the delete-controls element
+				var $controls = $($("#tmpl-MainContent-delControls").render());
+				$e.find(".deleteControl").html($controls);
+
+				var $inner = $e.find(".delete-controls-inner");
+				//$inner.css("transform","scale(2)");
+				setTimeout(function() {
+					$inner.addClass("show");
+				}, 10);
+
+				$controls.on("click", ".cancelBtn", function() {
+					$controls.find(".delete-controls-inner").removeClass("show").on("btransitionend", function() {
+						$controls.remove();
+					});
+				});
+
+				$controls.on("click", ".deleteBtn", function() {
+					brite.dao("Project").remove(c.projectId);
+				});
+
 			});
 
 			$e.on("btap", '.closeBtn', function(event) {
@@ -105,7 +64,7 @@
 			});
 
 			$e.on("btap", '.saveTaskBtn', function(event) {
-				var projectId = $e.find("input[name='id']").val();
+				var projectId = c.projectId;
 				var status = $e.find("select[name='status']").val();
 				var title = $('#myModal').find("input[name='title']").val();
 				brite.dao("Task").updateTask("Task", projectId, title, status).done(function() {
@@ -123,18 +82,10 @@
 			});
 
 			$('#myModal').on("keyup", function(event) {
-				// press ESC
 				if (event.which === 27) {
 					$('#myModal').hide();
 				}
 			});
-
-			// on Project dataChange, if it is this project, update the project part of the screen
-			brite.dao.onDataChange("Project", function(event) {
-				var daoEvent = event.daoEvent;
-				c.project = daoEvent.result;
-				refreshList.call(c.project.id);
-			}, c.id);
 		}
 
 		// --------- /Component Interface Implementation ---------- //
@@ -143,13 +94,13 @@
 		MainContent.prototype.refresh = function() {
 			var c = this;
 			var $e = c.$element;
-			var projectId = $e.find("input[name='id']").val();
 			setTimeout(function() {
-				brite.dao("Project").getProjectById(projectId).done(function(project) {
+				brite.dao("Project").getProjectById(c.projectId).done(function(project) {
 					var html = $("#tmpl-MainContent").render(project);
 					$e.html(html);
 				});
-			}, 300)
+			}, 100)
+
 		}
 
 		// --------- /Component Public API --------- //
@@ -172,16 +123,10 @@
 			$e.find(".msg").hide();
 		}
 
-		function refreshList(projectId) {
+		function refreshList() {
 			var p = $(document).bFindComponents("ProjectList");
 			if (p && p.length > 0) {
-				setTimeout(function() {
-					p[0].refresh(projectId);
-				}, 300)
-				if (!projectId) {
-					p[0].refreshContent();
-					showMsg("Save success!");
-				};
+				p[0].refresh();
 			}
 		}
 

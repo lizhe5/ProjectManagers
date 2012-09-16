@@ -30,7 +30,7 @@ public class TaskAcitonHandler {
             }
             po.setTitle(title);
             po.setStartTime(new Timestamp(System.currentTimeMillis()));
-            po.setStatus(status);
+            po.setStatus("Start");
             po.setProjectId(projectId);
             if (po.getId() != null) {
                 taskDao.update(po);

@@ -33,7 +33,31 @@
 			});
 
 			$e.on("btap", ".newBtn", function() {
-				brite.display("MainContent");
+				if ($e.find(".addItem").length < 1) {
+					var html = $("#tmpl-ProjectList-add-item").render({});
+					$e.find(".addProjectContain").append(html);
+				}
+
+				$e.find(".addItem input").focus().on("keyup", function(event) {
+					var data = {
+						subject : $(this).val()
+					};
+					// press ENTER
+					if (event.which === 13) {
+						brite.dao("Project").create(data).done(function(project) {
+							$e.find(".addItem").remove();
+							brite.display("MainContent", {
+								id : project.id
+							});
+						});
+					}
+					// press ESC
+					else if (event.which === 27) {
+						$e.find(".addItem").remove();
+					}
+				}).on("blur", function() {
+					$e.find(".addItem").remove();
+				});
 			});
 			c.refresh.call(c);
 		}
@@ -48,24 +72,10 @@
 				var $html = $("#tmpl-ProjectList-item").render(projectList);
 				$e.find(".projectListContain").html($html);
 				$e.find("[data-value='" + id + "']").addClass("active");
-				console.log(projectList.length);
 			});
 		}
 
-
-		ProjectList.prototype.refreshContent = function() {
-			brite.display("MainContent");
-		}
-
 		// --------- /Component Public API --------- //
-
-		// --------- Component Private Methods --------- //
-		function privateMethodOne() {
-			var c = this;
-
-		}
-
-		// --------- /Component Private Methods --------- //
 
 		// --------- Component Registration --------- //
 		brite.registerView("ProjectList", {
