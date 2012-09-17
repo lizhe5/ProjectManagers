@@ -24,11 +24,11 @@
 			var $e = c.$element;
 
 			$e.on("btap", ".item", function() {
-				var id = $(this).attr("data-value");
+				var obj = $(this).bEntity();
 				$e.find(".projectListContain").find("li").removeClass("active");
 				$(this).addClass("active");
 				brite.display("MainContent", {
-					id : id
+					id : obj.id
 				});
 			});
 
@@ -71,7 +71,7 @@
 			brite.dao("Project").list().done(function(projectList) {
 				var $html = $("#tmpl-ProjectList-item").render(projectList);
 				$e.find(".projectListContain").html($html);
-				$e.find("[data-value='" + id + "']").addClass("active");
+				$e.find("[data-entity-id='" + id + "']").addClass("active");
 			});
 		}
 
