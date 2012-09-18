@@ -7,16 +7,31 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
+
 @Entity
 @Table(name = "project")
 public class Project extends BaseEntity {
     private String subject;
+    @Transient
+    private String subjectView;
     private String description;
 
     private Date   createDate;
 
     @Transient
     private List   taskList;
+
+    public String getSubjectView() {
+        if (subject != null) {
+            if (subject.length() > 20) {
+                if (subject.indexOf(" ") < 0) {
+                    return StringUtils.abbreviate(subject, 20);
+                }
+            }
+        }
+        return subject;
+    }
 
     public String getSubject() {
         return subject;

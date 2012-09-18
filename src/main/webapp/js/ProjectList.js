@@ -26,30 +26,56 @@
 			$e.on("btap", ".item", function() {
 				var obj = $(this).bEntity();
 				$e.find(".projectListContain").find("li").removeClass("active");
-				$(this).addClass("active");
+				$(this).closest("li").addClass("active");
 				brite.display("MainContent", {
 					id : obj.id
 				});
 			});
 
+			$e.on("btap", ".editBtn", function() {
+				var obj = $(this).bEntity();
+				$e.find(".projectListContain").find("li").removeClass("active");
+				$(this).closest("li").addClass("active");
+				obj.subject=$(this).attr("data-value");
+				editProject(obj);
+			});
+
 			$e.on("btap", ".newBtn", function() {
+				editProject();
+			});
+
+			function editProject(project) {
 				if ($e.find(".addItem").length < 1) {
 					var html = $("#tmpl-ProjectList-add-item").render({});
 					$e.find(".addProjectContain").append(html);
 				}
 
-				$e.find(".addItem input").focus().on("keyup", function(event) {
+				$e.find(".addItem input[type='text']").focus().on("keyup", function(event) {
 					var data = {
 						subject : $(this).val()
 					};
 					// press ENTER
 					if (event.which === 13) {
-						brite.dao("Project").create(data).done(function(project) {
-							$e.find(".addItem").remove();
-							brite.display("MainContent", {
+						if (project && project.id) {
+							data = {
+								subject : $(this).val(),
 								id : project.id
+							};
+							brite.dao("Project").update(data).done(function(project) {
+								$e.find(".addItem").remove();
+								brite.display("MainContent", {
+									id : project.id
+								});
 							});
-						});
+						} else {
+							brite.dao("Project").create(data).done(function(project) {
+								$e.find(".addItem").remove();
+								brite.display("MainContent", {
+									id : project.id
+								});
+							});
+						};
+
 					}
 					// press ESC
 					else if (event.which === 27) {
@@ -58,7 +84,13 @@
 				}).on("blur", function() {
 					$e.find(".addItem").remove();
 				});
-			});
+
+				if (project) {
+					$e.find(".addItem input[name='addItem']").val(project.subject);
+				};
+			}
+
+
 			c.refresh.call(c);
 		}
 

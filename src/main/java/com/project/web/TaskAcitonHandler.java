@@ -26,10 +26,11 @@ public class TaskAcitonHandler {
         try {
             Task po = new Task();
             if (id != null) {
-                taskDao.get(id);
+                po = taskDao.get(id);
+            } else {
+                po.setStartTime(new Timestamp(System.currentTimeMillis()));
             }
             po.setTitle(title);
-            po.setStartTime(new Timestamp(System.currentTimeMillis()));
             po.setStatus("Start");
             po.setProjectId(projectId);
             if (po.getId() != null) {

@@ -33,6 +33,8 @@
 
 			$e.on("btap", '.addBtn', function(event) {
 				$(".subjectWarning").hide();
+				$e.find("input[name='title']").val('');
+				$e.find("input[name='taskId']").val('');
 				$('#myModal').show();
 			});
 
@@ -46,17 +48,17 @@
 				setTimeout(function() {
 					$inner.addClass("show");
 				}, 10);
-
-				$controls.on("click", ".cancelBtn", function() {
-					$controls.find(".delete-controls-inner").removeClass("show").on("btransitionend", function() {
+				$e.on("click", ".cancelBtn", function() {
+					$e.find(".delete-controls-inner").removeClass("show").on("btransitionend", function() {
 						$controls.remove();
+						$e.find(".showDeleteBtn").show();
 					});
 				});
 
-				$controls.on("click", ".deleteBtn", function() {
+				$e.on("click", ".deleteBtn", function() {
 					brite.dao("Project").remove(c.projectId);
 				});
-
+				$(this).hide();
 			});
 
 			$e.on("btap", '.closeBtn', function(event) {
@@ -65,20 +67,27 @@
 
 			$e.on("btap", '.saveTaskBtn', function(event) {
 				var projectId = c.projectId;
-				var status = $e.find("select[name='status']").val();
+				var id = $('#myModal').find("input[name='taskId']").val();
 				var title = $('#myModal').find("input[name='title']").val();
-				brite.dao("Task").updateTask("Task", projectId, title, status).done(function() {
+				brite.dao("Task").updateTask("Task",id, projectId, title).done(function() {
 					$('#myModal').hide();
 					c.refresh();
 				});
 			});
 
-			$e.on("change", '.op', function() {
-				var id = $(this).attr("data-value");
-				var op = $(this).val();
-				brite.dao("Task").opTask(id, op).done(function() {
-					c.refresh();
-				});
+			$e.on("btap", '.opBtn', function() {
+				var obj = $(this).bEntity();
+				var op = $(this).attr("op");
+				if (op == 'edit') {
+					var title = $(this).attr("data-value");
+					$e.find("input[name='title']").val(title);
+					$e.find("input[name='taskId']").val(obj.id);
+					$('#myModal').show();
+				} else {
+					brite.dao("Task").opTask(obj.id, op).done(function() {
+						c.refresh();
+					});
+				};
 			});
 
 			$('#myModal').on("keyup", function(event) {

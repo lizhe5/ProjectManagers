@@ -56,6 +56,15 @@ var app = app || {};
 	}
 	
 
+	app.util.abbreviate = function(s,len){
+		if (s.length>len) {
+			if (s.indexof(" ")<0) {
+				s = s.substring(0,len)+"...";
+			};
+		};
+	}
+	
+	
 })(jQuery);
 
 

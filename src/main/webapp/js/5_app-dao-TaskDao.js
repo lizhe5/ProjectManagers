@@ -6,8 +6,9 @@
 
 	brite.inherit(RemoteTaskDao, brite.dao.RemoteDao);
 
-	RemoteTaskDao.prototype.updateTask = function(objectType, projectId,title, status) {
+	RemoteTaskDao.prototype.updateTask = function(objectType,id, projectId,title, status) {
 		var data = {
+			id:id,
 			projectId : projectId,
 			title:title,
 			status : status

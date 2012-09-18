@@ -5,16 +5,32 @@ import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.apache.commons.lang.StringUtils;
 
 @Entity
 @Table(name = "task")
 public class Task extends BaseEntity {
     private String title;
+    @Transient
+    private String titleView;
     private Date   startTime;
     private String status;
     private Date   endTime;
 
     private Long   projectId;
+
+    public String getTitleView() {
+        if (title != null) {
+            if (title.length() > 100) {
+                if (title.indexOf(" ") < 0) {
+                    return StringUtils.abbreviate(title, 100);
+                }
+            }
+        }
+        return title;
+    }
 
     public String getStartTimeView() {
         String s = "";
