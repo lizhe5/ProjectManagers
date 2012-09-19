@@ -39,6 +39,13 @@
 				}
 			}, c.id);
 		}
+
+
+		MainScreen.prototype.destroy = function() {
+			$(document).off("." + this.id);
+			brite.dao.offAny(this.id);
+		}
+
 		// --------- /Component Interface Implementation ---------- //
 
 		// --------- Component Registration --------- //
