@@ -69,6 +69,7 @@
 				var projectId = c.projectId;
 				var id = $('#myModal').find("input[name='taskId']").val();
 				var title = $('#myModal').find("input[name='title']").val();
+				if (title=="") {return ;};
 				brite.dao("Task").updateTask("Task",id, projectId, title).done(function() {
 					$('#myModal').hide();
 					c.refresh();

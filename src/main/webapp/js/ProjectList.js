@@ -36,7 +36,7 @@
 				var obj = $(this).bEntity();
 				$e.find(".projectListContain").find("li").removeClass("active");
 				$(this).closest("li").addClass("active");
-				obj.subject=$(this).attr("data-value");
+				obj.subject = $(this).attr("data-value");
 				editProject(obj);
 			});
 
@@ -56,11 +56,15 @@
 					};
 					// press ENTER
 					if (event.which === 13) {
+						if ($(this).val() == "") {
+							return;
+						};
 						if (project && project.id) {
 							data = {
 								subject : $(this).val(),
 								id : project.id
 							};
+
 							brite.dao("Project").update(data).done(function(project) {
 								$e.find(".addItem").remove();
 								brite.display("MainContent", {
@@ -104,6 +108,13 @@
 				var $html = $("#tmpl-ProjectList-item").render(projectList);
 				$e.find(".projectListContain").html($html);
 				$e.find("[data-entity-id='" + id + "']").addClass("active");
+				if (!id) {
+					var a = $e.find(".projectListContain a");
+					if (a.length > 0) {
+						a = $(a.get(0));
+						a.trigger("btap");
+					};
+				};
 			});
 		}
 
