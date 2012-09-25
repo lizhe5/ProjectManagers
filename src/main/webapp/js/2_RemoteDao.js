@@ -83,7 +83,7 @@ var app = app || {};
 		};
 		var dfd = $.ajax({
 			type : "POST",
-			url : "daoSave.do",
+			url : contextPath +"/daoSave.do",
 			data : reqData,
 			dataType : "json"
 		}).pipe(function(val) {
@@ -110,7 +110,7 @@ var app = app || {};
 
 		return $.ajax({
 			type : "POST",
-			url : "daoSave.do",
+			url : contextPath +"/daoSave.do",
 			data : reqData,
 			dataType : "json"
 		}).pipe(function(val) {
@@ -133,7 +133,7 @@ var app = app || {};
 
 		var dfd = $.ajax({
 			type : "POST",
-			url : "daoDelete.do",
+			url : contextPath +"/daoDelete.do",
 			data : reqData,
 			dataType : "json"
 		}).pipe(function(val) {
@@ -151,7 +151,7 @@ var app = app || {};
 
 		var dfd = $.ajax({
 			type : "POST",
-			url : "daoDeleteMany.do",
+			url : contextPath +"/daoDeleteMany.do",
 			data : reqData,
 			dataType : "json"
 		}).pipe(function(val) {

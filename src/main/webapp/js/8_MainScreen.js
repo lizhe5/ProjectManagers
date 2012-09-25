@@ -15,7 +15,6 @@
 		};
 
 		MainScreen.prototype.create = function(data, config) {
-			
 			var html = $("#tmpl-MainScreen").html();
 			return $(html);
 		}

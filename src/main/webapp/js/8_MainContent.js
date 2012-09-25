@@ -17,13 +17,19 @@
 			var c = this;
 			c.projectId = data.id;
 			var dfd = $.Deferred();
-
+			var createDfd = $.Deferred();
 			brite.dao("Project").getProjectById(c.projectId).done(function(project) {
-				var html = $("#tmpl-MainContent").render(project);
-				var $e = $(html);
-				dfd.resolve($e);
+				var message = {
+					templateName : 'tmpl-MainContent',
+					data : project,
+					dfd : dfd
+				};
+				app.sendMessage(message);
+				dfd.done(function(html) {
+					createDfd.resolve($(html));
+				});
 			});
-			return dfd.promise();
+			return createDfd.promise();
 		}
 
 
@@ -40,7 +46,7 @@
 
 			$e.on("btap", '.showDeleteBtn', function(event) {
 				// create the delete-controls element
-				var $controls = $($("#tmpl-MainContent-delControls").render());
+				var $controls = $($("#tmpl-MainContent-delControls").html());
 				$e.find(".deleteControl").html($controls);
 
 				var $inner = $e.find(".delete-controls-inner");
@@ -69,8 +75,10 @@
 				var projectId = c.projectId;
 				var id = $('#myModal').find("input[name='taskId']").val();
 				var title = $('#myModal').find("input[name='title']").val();
-				if (title=="") {return ;};
-				brite.dao("Task").updateTask("Task",id, projectId, title).done(function() {
+				if (title == "") {
+					return;
+				};
+				brite.dao("Task").updateTask("Task", id, projectId, title).done(function() {
 					$('#myModal').hide();
 					c.refresh();
 				});
@@ -106,8 +114,18 @@
 			var $e = c.$element;
 			setTimeout(function() {
 				brite.dao("Project").getProjectById(c.projectId).done(function(project) {
-					var html = $("#tmpl-MainContent").render(project);
-					$e.html(html);
+					var dfd = $.Deferred();
+					var message = {
+						templateName : 'tmpl-MainContent',
+						data : {
+						},
+						dfd : dfd
+					};
+					app.sendMessage(message);
+					dfd.done(function(html) {
+						$e.html(html);
+					});
+
 				});
 			}, 100)
 

@@ -13,8 +13,19 @@
 		};
 
 		ProjectList.prototype.create = function(data, config) {
-			  var html = $("#tmpl-ProjectList").html();
-        	return $(html);
+			var dfd = $.Deferred();
+			var createDfd = $.Deferred();
+			var message = {
+				templateName : 'tmpl-ProjectList',
+				data : {
+				},
+				dfd : dfd
+			};
+			app.sendMessage(message);
+			dfd.done(function(html) {
+				createDfd.resolve($(html));
+			});
+			return createDfd.promise();
 		}
 
 
@@ -100,33 +111,31 @@
 		// --------- /Component Interface Implementation ---------- //
 
 		// --------- Component Public API --------- //
-			
 		ProjectList.prototype.refresh = function(id) {
 			var c = this;
 			var $e = c.$element;
 			brite.dao("Project").list().done(function(projectList) {
-				var $ele = $("#tmpl-ProjectList-item").html();
-				var $html = "";
-				for (var i = 0; i < projectList.length; i++) {
-		
-					var html = $ele.replace("{{:id}}", projectList[i].id).replace("{{:subjectView}}", projectList[i].subjectView)
-					.replace("{{:subject}}", projectList[i].subject);
-					$html += html;
-		
+				var dfd = $.Deferred();
+				var message = {
+					templateName : 'tmpl-ProjectList-item',
+					data : projectList,
+					dfd : dfd
 				};
-		
-				$e.find(".projectListContain").html($html);
-				$e.find("[data-entity-id='" + id + "']").addClass("active");
-				if (!id) {
-					var a = $e.find(".projectListContain a");
-					if (a.length > 0) {
-						a = $(a.get(0));
-						a.trigger("btap");
+				app.sendMessage(message);
+				dfd.done(function(html) {
+					$e.find(".projectListContain").html(html);
+					$e.find("[data-entity-id='" + id + "']").addClass("active");
+					if (!id) {
+						var a = $e.find(".projectListContain a");
+						if (a.length > 0) {
+							a = $(a.get(0));
+							a.trigger("btap");
+						};
 					};
-				};
+				});
+
 			});
 		}
-
 
 		// --------- /Component Public API --------- //
 

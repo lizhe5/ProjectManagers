@@ -1,0 +1,176 @@
+<!--
+- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+- Use of this source code is governed by a BSD-style license that can be
+- found in the LICENSE file.
+-->
+<!doctype html>
+<html>
+	<head>
+		<script type="text/javascript" src="/js/0_jquery.min.js"></script>
+		<script src="/js/1_jsrender.js"></script>
+	</head>
+	<body>
+
+		<script id="tmpl-MainScreen" type="text/html">
+			<div class="MainScreen">
+			<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="navbar-inner">
+			<div class="container-fluid">
+			<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			</a>
+			<a class="brand" href="#">Project managers</a>
+			<div class="nav-collapse collapse">
+			<p class="navbar-text pull-right">
+			</p>
+			<ul class="nav">
+			</ul>
+			</div><!--/.nav-collapse -->
+			</div>
+			</div>
+			</div>
+
+			<div class="container-fluid">
+			<div class="row-fluid">
+			<div class="span3 left-content">
+
+			</div><!--/span-->
+			<div class="span9">
+			<div class="main-content">
+			</div>
+			</div><!--/span-hero-unit ->
+			</div><!--/row-->
+
+			</div><!--/.fluid-container-->
+			</div>
+		</script>
+
+		<script id="tmpl-ProjectList" type="text/html">
+			<div class="well sidebar-nav">
+			<ul class="nav nav-list addProjectContain">
+			<li class="nav-header">Project list
+			<button class="btn btn-mini btn-primary newBtn pull-right btn-success" type="button">+</button>
+			</li>
+			</ul>
+			<ul class="nav nav-list projectListContain">
+			</ul>
+			</div><!--/.well -->
+		</script>
+
+		<script id="tmpl-ProjectList-item" type="text/html">
+			<li  style="position:relative">
+			<a class="item" href="#"  data-entity="Project" data-entity-id="{{:id}}" >{{:subjectView}}</a>
+			<i class="icon-edit editBtn"  style="position: absolute;right:0;top:2px"  data-entity="Project" data-entity-id="{{:id}}" data-value='{{:subject}}'></i>
+			</li>
+		</script>
+		<script id="tmpl-ProjectList-add-item" type="text/html">
+			<li class="item addItem" style="margin-top: 5px">
+			<input type="text" name="addItem" placeholder="[Enter] to update,[ESC] to cancel" style="height: 16px"/>
+			</li>
+		</script>
+
+		<script id="tmpl-MainContent" type="text/html">
+			<div class="MainContent">
+			<form class="form-horizontal">
+			<div class="alert alert-success hide msg">
+			</div>
+			<div class="alert alert-block hide">
+			</div>
+			<legend>{{:subjectView}}
+			<button class="btn btn-mini btn-primary addBtn btn-success" type="button">+</button>
+			<span class="pull-right"><button class="btn btn-small showDeleteBtn btn-warning" type="button">Delete Project</button></span>
+			<span class="deleteControl  pull-right"></span>
+			</legend>
+			<table class="table table-hover">
+			<thead>
+			<tr>
+			<th style="width: 4%"> </th>
+			<th style="width: 35%">Title</th>
+			<th style="width: 20%">Time</th>
+			<th style="width: 10%">Status</th>
+			<th style="width: 10%">*</th>
+			</tr>
+			</thead>
+			<tbody class="taskListContain">
+			{{if taskList}}
+			{{for taskList}}
+			<tr>
+			<td>{{:id}}</td>
+			<td>{{:titleView}}</td>
+			<td>{{:startTimeView}}</td>
+			<td>{{:status}}</td>
+			<td>
+
+			<a href="javascript:void(0)"><i class="icon-edit opBtn" op='edit' data-entity="Project" data-entity-id="{{:id}}" data-value='{{:title}}'></i></a>
+			<a href="javascript:void(0)"><i class="icon-upload opBtn" op='end' data-entity="Project" data-entity-id="{{:id}}"></i></a>
+			<a href="javascript:void(0)"><i class="icon-trash opBtn" op='del' data-entity="Project" data-entity-id="{{:id}}"></i></a>
+			</td>
+
+			</tr>
+			{{/for}}
+			{{/if}}
+			</tbody>
+			</table>
+			</form>
+			</div>
+
+			<div class="modal hide" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-header">
+			<button type="button" class="close closeBtn" data-dismiss="modal" aria-hidden="true">
+			×
+			</button>
+			<h3 id="myModalLabel">Task Detail</h3>
+			</div>
+			<div class="modal-body">
+			<div class="control-group">
+			<label class="control-label">Title</label>
+			<div class="controls">
+			<input type="hidden" name="taskId" value="{{:taskId}}">
+			<input type="text" name="title" placeholder="Title" autofocus="autofocus"  class="input-xxlarge" value="{{:title}}">
+			</div>
+			</div>
+
+			</div>
+			<div class="modal-footer">
+			<button class="btn closeBtn" data-dismiss="modal" aria-hidden="true">
+			Close
+			</button>
+			<button class="btn btn-primary saveTaskBtn">
+			Save changes
+			</button>
+			</div>
+			</div>
+		</script>
+
+		<script id="tmpl-MainContent-Task-item" type="text/html">
+			<tr>
+			<td>{{:id}}</td>
+			<td>{{:title}}</td>
+			<td>{{:startTime}}</td>
+			<td>{{:endTime}}</td>
+			</tr>
+		</script>
+
+		<script id="tmpl-MainContent-delControls" type="text/html">
+			<span class="delete-controls">
+			<span class="delete-controls-inner">
+			<span class="btn btn-small btn-danger deleteBtn">Delete</span>
+			<span class="btn btn-small cancelBtn">Cancel</span>
+			</span>
+			</span>
+		</script>
+
+		<script>
+			window.addEventListener('message', function(event) {
+				console.log("get message")
+				var html = $("#" + event.data.templateName).render(event.data.data);
+				event.source.postMessage({
+					'result' : html,
+					'id':event.data.id
+				}, event.origin);
+			});
+		</script>
+	</body>
+</html>

@@ -16,7 +16,7 @@
 
 		var dfd = $.ajax({
 			type : "POST",
-			url : "createTask.do",
+			url : contextPath +"/createTask.do",
 			data : data,
 			dataType : "json"
 		}).pipe(function(val) {
@@ -33,7 +33,7 @@
 
 		var dfd = $.ajax({
 			type : "POST",
-			url : "opTask.do",
+			url : contextPath +"/opTask.do",
 			data : data,
 			dataType : "json"
 		}).pipe(function(val) {
