@@ -16,16 +16,13 @@
 		MainContent.prototype.create = function(data, config) {
 			var c = this;
 			c.projectId = data.id;
-			var dfd = $.Deferred();
 			var createDfd = $.Deferred();
 			brite.dao("Project").getProjectById(c.projectId).done(function(project) {
 				var message = {
 					templateName : 'tmpl-MainContent',
-					data : project,
-					dfd : dfd
+					data : project
 				};
-				app.sendMessage(message);
-				dfd.done(function(html) {
+				renderer.render(message).done(function(html) {
 					createDfd.resolve($(html));
 				});
 			});
@@ -114,15 +111,12 @@
 			var $e = c.$element;
 			setTimeout(function() {
 				brite.dao("Project").getProjectById(c.projectId).done(function(project) {
-					var dfd = $.Deferred();
 					var message = {
 						templateName : 'tmpl-MainContent',
 						data : {
-						},
-						dfd : dfd
+						}
 					};
-					app.sendMessage(message);
-					dfd.done(function(html) {
+					renderer.render(message).done(function(html) {
 						$e.html(html);
 					});
 

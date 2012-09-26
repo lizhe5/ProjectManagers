@@ -13,16 +13,11 @@
 		};
 
 		ProjectList.prototype.create = function(data, config) {
-			var dfd = $.Deferred();
 			var createDfd = $.Deferred();
 			var message = {
-				templateName : 'tmpl-ProjectList',
-				data : {
-				},
-				dfd : dfd
+				templateName : 'tmpl-ProjectList'
 			};
-			app.sendMessage(message);
-			dfd.done(function(html) {
+			renderer.render(message).done(function(html) {
 				createDfd.resolve($(html));
 			});
 			return createDfd.promise();
@@ -115,14 +110,11 @@
 			var c = this;
 			var $e = c.$element;
 			brite.dao("Project").list().done(function(projectList) {
-				var dfd = $.Deferred();
 				var message = {
 					templateName : 'tmpl-ProjectList-item',
-					data : projectList,
-					dfd : dfd
+					data : projectList
 				};
-				app.sendMessage(message);
-				dfd.done(function(html) {
+				renderer.render(message).done(function(html) {
 					$e.find(".projectListContain").html(html);
 					$e.find("[data-entity-id='" + id + "']").addClass("active");
 					if (!id) {
