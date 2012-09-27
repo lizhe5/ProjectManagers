@@ -18,11 +18,7 @@
 			c.projectId = data.id;
 			var createDfd = $.Deferred();
 			brite.dao("Project").getProjectById(c.projectId).done(function(project) {
-				var message = {
-					templateName : 'tmpl-MainContent',
-					data : project
-				};
-				renderer.render(message).done(function(html) {
+				renderer.render('MainContent', project).done(function(html) {
 					createDfd.resolve($(html));
 				});
 			});
@@ -111,12 +107,7 @@
 			var $e = c.$element;
 			setTimeout(function() {
 				brite.dao("Project").getProjectById(c.projectId).done(function(project) {
-					var message = {
-						templateName : 'tmpl-MainContent',
-						data : {
-						}
-					};
-					renderer.render(message).done(function(html) {
+					renderer.render('MainContent').done(function(html) {
 						$e.html(html);
 					});
 
