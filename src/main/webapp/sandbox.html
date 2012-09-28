@@ -9,14 +9,15 @@
 		<script type="text/javascript" src="/js/0_jquery.min.js"></script>
 		<script src="/js/1_jsrender.js"></script>
 	</head>
-	<body>
-		<script>
-			 $(window).on("message",function(e){
+	 <body>
+  	<script>
+      // Set up message event handler:
+      $(window).on("message",function(e){
       	var originalEvent = e.originalEvent
 		var data = originalEvent.data;
 		var tmpl = $(data.tmplSource).render(data.tmplData);
-        originalEvent.source.postMessage({'tmpl': tmpl}, originalEvent.origin);
+        originalEvent.source.postMessage({'tmpl': tmpl,renderId:data.renderId}, originalEvent.origin);
       });
-		</script>
-	</body>
+    </script>
+  </body>
 </html>
