@@ -1,43 +1,31 @@
-/**
- * Component: MainContent
- *
- * Responsibilities:
- *   - Manage a single project screen
- *   - Manage the task list of a project
- *
- */
 ;(function() {
-	(function($) {
-
-		// --------- Component Interface Implementation ---------- //
-		function MainContent() {
-		};
-
-		MainContent.prototype.create = function(data, config) {
-			var c = this;
-			c.projectId = data.id;
+	brite.registerView("MainContent", {
+		loadTmpl : true,
+		emptyParent : true,
+		parent : ".main-content"
+	}, {
+		create : function(data, config) {
+			var view = this;
+			view.projectId = data.id;
 			var createDfd = $.Deferred();
-			brite.dao("Project").getProjectById(c.projectId).done(function(project) {
+			brite.dao("Project").getProjectById(view.projectId).done(function(project) {
 				renderer.render('MainContent', project).done(function(html) {
 					createDfd.resolve($(html));
 				});
 			});
 			return createDfd.promise();
-		}
+		},
 
-
-		MainContent.prototype.postDisplay = function(data, config) {
-			var c = this;
-			var $e = c.$element;
-
-			$e.on("btap", '.addBtn', function(event) {
+		events : {
+			//show group panel view
+			"btap;.addBtn" : function(e) {
 				$(".subjectWarning").hide();
 				$e.find("input[name='title']").val('');
 				$e.find("input[name='taskId']").val('');
 				$('#myModal').show();
-			});
+			},
 
-			$e.on("btap", '.showDeleteBtn', function(event) {
+			"btap;.showDeleteBtn" : function(e) {
 				// create the delete-controls element
 				var $controls = $($("#tmpl-MainContent-delControls").html());
 				$e.find(".deleteControl").html($controls);
@@ -58,13 +46,11 @@
 					brite.dao("Project").remove(c.projectId);
 				});
 				$(this).hide();
-			});
-
-			$e.on("btap", '.closeBtn', function(event) {
+			},
+			"btap;.closeBtn" : function(e) {
 				$('#myModal').hide();
-			});
-
-			$e.on("btap", '.saveTaskBtn', function(event) {
+			},
+			"btap;.saveTaskBtn" : function(e) {
 				var projectId = c.projectId;
 				var id = $('#myModal').find("input[name='taskId']").val();
 				var title = $('#myModal').find("input[name='title']").val();
@@ -75,9 +61,9 @@
 					$('#myModal').hide();
 					c.refresh();
 				});
-			});
+			},
 
-			$e.on("btap", '.opBtn', function() {
+			"btap;.opBtn" : function(e) {
 				var obj = $(this).bEntity();
 				var op = $(this).attr("op");
 				if (op == 'edit') {
@@ -90,7 +76,21 @@
 						c.refresh();
 					});
 				};
-			});
+			},
+
+		},
+
+		docEvents : {
+			//bind event with refresh contacts
+		},
+
+		daoEvents : {
+			// on dataChange of contact, just refresh all for now (can be easily optimized)
+		},
+
+		postDisplay : function(data, config) {
+			var view = this;
+			var $e = view.$el;
 
 			$('#myModal').on("keyup", function(event) {
 				if (event.which === 27) {
@@ -99,62 +99,28 @@
 			});
 		}
 
-		// --------- /Component Interface Implementation ---------- //
-
-		// --------- Component Public API --------- //
-		MainContent.prototype.refresh = function() {
-			var c = this;
-			var $e = c.$element;
-			setTimeout(function() {
-				brite.dao("Project").getProjectById(c.projectId).done(function(project) {
-					renderer.render('MainContent').done(function(html) {
-						$e.html(html);
-					});
-
+	});
+	// --------- View Private Methods --------- //
+	function refresh() {
+		var view = this;
+		var $e = view.$el;
+		setTimeout(function() {
+			brite.dao("Project").getProjectById(view.projectId).done(function(project) {
+				renderer.render('MainContent').done(function(html) {
+					$e.html(html);
 				});
-			}, 100)
 
+			});
+		}, 100)
+	}
+
+	function refreshList() {
+		var p = $(document).bFindComponents("ProjectList");
+		if (p && p.length > 0) {
+			p[0].refresh();
 		}
+	}
 
-		// --------- /Component Public API --------- //
-
-		// --------- Component Private Methods --------- //
-		function privateMethodOne() {
-			var c = this;
-
-		}
-
-		function showMsg(msg) {
-			var c = this;
-			var $e = $(c);
-			$e.find(".msg").html(msg).show();
-		}
-
-		function hideMsg() {
-			var c = this;
-			var $e = c.$element;
-			$e.find(".msg").hide();
-		}
-
-		function refreshList() {
-			var p = $(document).bFindComponents("ProjectList");
-			if (p && p.length > 0) {
-				p[0].refresh();
-			}
-		}
-
-		// --------- /Component Private Methods --------- //
-
-		// --------- Component Registration --------- //
-		brite.registerView("MainContent", {
-			loadTmpl : true,
-			emptyParent : true,
-			parent : ".main-content"
-		}, function() {
-			return new MainContent();
-		});
-		// --------- Component Registration --------- //
-
-	})(jQuery);
-
+	// --------- /View Private Methods --------- //
 })();
+

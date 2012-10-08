@@ -11,6 +11,10 @@ brite.version = "0.9.0-snapshot";
  */
 (function($) {
   
+  // Note: for now, document bound view events are just namespaced with the view_id
+  var DOC_EVENT_NS_PREFIX = ".";
+  var WIN_EVENT_NS_PREFIX = ".";
+  
   var cidSeq = 0;
 
 	var _componentDefStore = {};
@@ -82,11 +86,12 @@ brite.version = "0.9.0-snapshot";
 	 *                                         the element for $.bRemove). It will get called after this component htmlElement will get removed<br />
 	 * 
 	 */
-	brite.registerView = function(name, config, componentFactory) {
+	brite.registerView = function(name, arg1, arg2) {
 		var def = {};
 		def.name = name;
-		def.componentFactory = componentFactory;
-		def.config = $.extend({}, this.defaultComponentConfig,config);
+		def.componentFactory = (arg2)?arg2:arg1;
+		var config = (arg2)?arg1:null; // no config if only two arguments
+		def.config = $.extend({}, brite.viewDefaultConfig,config);
 		_componentDefStore[name] = def;
 
 		// This resolve the deferred if we had a deferred component loading 
@@ -137,6 +142,7 @@ brite.version = "0.9.0-snapshot";
 	 * 
 	 * @param {String}
 	 *            name (required) the view name
+	 * @param {Element} HTML Element, jQuery element, or a jQuery selector, where the element will be added. 
 	 * @param {Object}
 	 *            data (optional, required if config) the data to be passed to the build and postDisplay.
 	 * @param {Object}
@@ -144,9 +150,21 @@ brite.version = "0.9.0-snapshot";
 	 *            params for description)
 	 * @return {Component} return the component instance.
 	 */
-	brite.display = function(viewName, data, config) {
+	brite.display = function(viewName, parent, data, config) {
+		if (parent){
+			config = config || {};
+			config.parent = parent;
+		}
 		return process(viewName, data, config);
 	};
+	
+	// to ease backward compatiblity 
+	brite.legacyDisplay = function(viewName, data, config) {
+		var parent = (config)?config.parent:null;
+		brite.display(viewName,parent,data,config);
+	};
+	
+	
 
 	/**
 	 * Same as brite.display but bypass the build() step (postDisplay() will still be called). So, this will create a
@@ -293,7 +311,7 @@ brite.version = "0.9.0-snapshot";
           dfd.resolve(componentDef);
         }else{ 
           dfd.reject("Component js file [" + resourceFile + 
-                     "] loaded, but it did not seem to have registered the component - it needs to call brite.registerComponent('" + name + 
+                     "] loaded, but it did not seem to have registered the view - it needs to call brite.registerView('" + name + 
                      "',...config...) - see documentation");        
         }
       }).fail(function(){
@@ -326,12 +344,12 @@ brite.version = "0.9.0-snapshot";
 
 			// If the config.unique is set, and there is a component with the same name, we resolve the deferred now
 			// NOTE: the whenCreate and whenPostDisplay won't be resolved again
-			// TODO: an optimization point would be to add a "bComponentUnique" in the class for data-brite-component that
+			// TODO: an optimization point would be to add a "bComponentUnique" in the class for data-b-view that
 			// have a confi.unique = true
 			// This way, the query below could be ".bComponentUnique [....]" and should speedup the search significantly
 			// on UserAgents that supports the getElementsByClassName
 			if (config.unique) {
-				var $component = $("[data-brite-component='" + name + "']");
+				var $component = $("[data-b-view='" + name + "']");
 				if ($component.length > 0) {
 					component = $component.bComponent();
 					processDeferred.resolve(component);
@@ -388,6 +406,7 @@ brite.version = "0.9.0-snapshot";
 						// TODO: implement deferred for the render as well.
 						renderComponent(component, data, config);
 
+						// TODO: this might need to be fore the renderComponent
 						initDeferred.resolve(component);
 
 					});
@@ -397,7 +416,7 @@ brite.version = "0.9.0-snapshot";
 					// nothing but still instantiate the component
 					createDeferred.resolve(component);
 
-					// TODO: probably need to invokeInit in thi scase as well. For now, just resolve the initDeferred
+					// TODO: probably need to invokeInit in this case as well. For now, just resolve the initDeferred
 					initDeferred.resolve(component);
 
 				}
@@ -407,7 +426,7 @@ brite.version = "0.9.0-snapshot";
 
 					// if there is a parent component, then need to wait until it display to display this one.
 					if ($element && $element.parent()) {
-						var parentComponent$Element = $element.parent().closest("[data-brite-component]");
+						var parentComponent$Element = $element.parent().closest("[data-b-view]");
 
 						if (parentComponent$Element.length > 0) {
 							parentComponentProcessPromise = parentComponent$Element.data("componentProcessPromise");
@@ -451,7 +470,7 @@ brite.version = "0.9.0-snapshot";
 	}
 
 	function renderComponent(component, data, config) {
-
+		var $parent;
 		if (config.transition) {
 			var transition = brite.getTransition(config.transition);
 
@@ -467,19 +486,21 @@ brite.version = "0.9.0-snapshot";
 				$(config.replace).bRemove();
 			}
 
-			// note: if there is no parent, then, the sUI.diplay caller is reponsible to add it
+			
+			// note: if there is no parent, then, the sUI.diplay caller is responsible to add it
 			if (config.parent) {
+				$parent = $(config.parent);
 				if (config.emptyParent) {
-					$(config.parent).bEmpty();
+					$parent.bEmpty();
 				}
-				$(config.parent).append(component.$element);
+				$parent.append(component.$el);
 			}
 		}
 
 	}
 	;
 
-	// ------ Private Helpers ------ //
+	// ------ Helpers ------ //
 	// build a config for a componentDef
 	function buildConfig(componentDef, config) {
 		var instanceConfig = $.extend({}, componentDef.config, config);
@@ -533,15 +554,36 @@ brite.version = "0.9.0-snapshot";
 	}
 	// 
 	function bind$element($element, component, data, config) {
-		component.$element = $element;
+		component.el = $element[0];
+		// component.$element is for deprecated, .$el is te way to access it. 
+		component.$el = component.$element = $element; 
 		$element.data("component", component);
 
-		$element.attr("data-brite-component", config.componentName);
+		$element.attr("data-b-view", config.componentName);
 		$element.attr("data-brite-cid", component.cid);
 	}
 
+	// Note: This will be called even if .postDisplay is not defined (test is inside this method)
+	//       So, we do the view events binding here. 
 	function invokePostDisplay(component, data, config) {
 		var invokeDfd = $.Deferred();
+
+		// bind the view events
+		if (component.events){
+			bindEvents(component.events,component.$el,component);
+		}
+		
+		// bind the document events (note: need to have a namespace since they will need to be cleaned up)
+		if (component.docEvents){
+			bindEvents(component.docEvents,$(document),component, DOC_EVENT_NS_PREFIX + component.id);
+		}
+		
+		// bind the window events if present
+		if (component.winEvents){
+			bindEvents(component.winEvents,$(window),component, WIN_EVENT_NS_PREFIX + component.id);
+		}
+		
+		bindDaoEvents(component);
 
 		// Call the eventual postDisplay
 		// (differing for performance)
@@ -579,7 +621,59 @@ brite.version = "0.9.0-snapshot";
 
 		return invokeDfd.promise();
 	}
-	// ------ /Private Helpers ------ //
+	
+	function bindEvents(eventMap,$baseElement,component,namespace){
+		$.each(eventMap,function(edef,etarget){
+			var edefs = edef.split(";");
+			var ename = edefs[0] + ((namespace)?namespace:"");
+			var eselector = edefs[1]; // can be undefined, but in this case it is direct.
+
+			// 
+			var efn = getFn(component,etarget);
+			if (efn){
+				$baseElement.on(ename,eselector,function(){
+					var args = $.makeArray(arguments);
+					efn.apply(component,args);
+				});
+			}else{
+				throw "BRITE ERROR: '" + component.name + "' component event handler function '" + etarget + "' not found."; 
+			}
+		});		
+	}
+	
+	function bindDaoEvents(component){
+		var daoEvents = component.daoEvents;
+		
+		if (component.daoEvents){
+			// for now, the namespace is just the component id
+			var ns = component.id;
+			$.each(daoEvents,function(edef,etarget){
+				var efn = getFn(component,etarget);
+				if (efn){
+					var edefs = edef.split(";");
+					var ename = edefs[0];
+					ename = ename.charAt(0).toUpperCase() + ename.slice(1);
+					var eventTypes = edefs[1];
+					var entityTypes = edefs[2];
+					brite.dao["on" + ename](eventTypes,entityTypes,function(event){
+						var args = $.makeArray(arguments);
+						efn.apply(component,args);						
+					},ns);
+				}else{
+					throw "BRITE ERROR: '" + component.name + "' component daoEvent handler function '" + etarget + "' not found.";
+				}
+			});
+		}
+	}
+	
+	function getFn(component,target){
+ 			var fn = target;
+			if (!$.isFunction(fn)){
+				fn = component[target];
+			}
+			return fn;		
+	}
+	// ------ /Helpers ------ //
 
   // --------- File Include (JS & CSS) ------ //
   /*
@@ -639,13 +733,83 @@ brite.version = "0.9.0-snapshot";
 // ---------------------- //
 
 (function($) {
-	/**
-	 * @namespace
-	 * 
-	 * briteUI jQuery extensions.
-	 */
-	$.fn = $.fn;
+	// warning: duplicate definition (must be the same a previous block)
+	var DOC_EVENT_NS_PREFIX = ".";
+	var WIN_EVENT_NS_PREFIX = ".";
+	
 
+	/**
+	 * Safely empty a HTMLElement of its children HTMLElement and bComponent by calling the preRemove and postRemove on
+	 * every child components.
+	 * 
+	 * @return the jQuery object
+	 */
+	$.fn.bEmpty = function() {
+		return this.each(function() {
+			var $this = $(this);
+
+			var componentChildren = $this.bFindComponents();
+
+			// call the preRemoves
+			$.each(componentChildren, function(idx, childComponent) {
+				processDestroy(childComponent);
+			});
+
+			// do the empty
+			$this.empty();
+
+		});
+	}
+
+	/**
+	 * Safely remove a HTMLElement and the related bComponent by calling the preRemote and postRemove on every child
+	 * components as well as this component.
+	 * 
+	 * @return what a jquery.remove would return
+	 */
+	$.fn.bRemove = function() {
+
+		return this.each(function() {
+			var $this = $(this);
+			$this.bEmpty();
+
+			if ($this.is("[data-b-view]")) {
+				var component = $this.data("component");
+				processDestroy(component);
+
+				$this.remove();
+			} else {
+				$this.remove();
+			}
+		});
+
+	}
+
+	function processDestroy(component) {
+		// The if(component) is a safeguard in case destroy gets call twice (issue when clicking fast on
+		// test_brite-02-transition....)
+		if (component) {
+			// unbind view events
+			$(document).off(DOC_EVENT_NS_PREFIX + component.id);
+			$(window).off(WIN_EVENT_NS_PREFIX + component.id);
+			
+			if (brite.dao){
+				brite.dao.offAny(component.id);
+			}
+									
+			var destroyFunc = component.destroy;
+
+			if ($.isFunction(destroyFunc)) {
+				destroyFunc.call(component);
+			}
+		}
+	}
+
+})(jQuery);
+
+// ------------------------------------- //
+// --------- old bComponent APIs ------- //
+(function($) {
 	/**
 	 * 
 	 * Return the component that this html element belong to. Thi traverse the tree backwards (this html element up to
@@ -669,9 +833,9 @@ brite.version = "0.9.0-snapshot";
 		// iterate and process each matched element
 		var $componentElement;
 		if (componentName) {
-			$componentElement = $(this).closest("[data-brite-component='" + componentName + "']");
+			$componentElement = $(this).closest("[data-b-view='" + componentName + "']");
 		} else {
-			$componentElement = $(this).closest("[data-brite-component]");
+			$componentElement = $(this).closest("[data-b-view]");
 		}
 
 		return $componentElement.data("component");
@@ -694,9 +858,9 @@ brite.version = "0.9.0-snapshot";
 			var $componentElements;
 
 			if (componentName) {
-				$componentElements = $(this).find("[data-brite-component='" + componentName + "']");
+				$componentElements = $(this).find("[data-b-view='" + componentName + "']");
 			} else {
-				$componentElements = $(this).find("[data-brite-component]");
+				$componentElements = $(this).find("[data-b-view]");
 			}
 
 			$componentElements.each(function() {
@@ -724,9 +888,9 @@ brite.version = "0.9.0-snapshot";
 			var $componentElements;
 
 			if (componentName) {
-				$componentElements = $(this).find("[data-brite-component='" + componentName + "']:first");
+				$componentElements = $(this).find("[data-b-view='" + componentName + "']:first");
 			} else {
-				$componentElements = $(this).find("[data-brite-component]:first");
+				$componentElements = $(this).find("[data-b-view]:first");
 			}
 
 			$componentElements.each(function() {
@@ -738,92 +902,91 @@ brite.version = "0.9.0-snapshot";
 		return childrenComponents;
 	}
 
-	/**
-	 * Safely empty a HTMLElement of its children HTMLElement and bComponent by calling the preRemove and postRemove on
-	 * every child components.
-	 * 
-	 * @return the jQuery object
-	 */
-	$.fn.bEmpty = function() {
-		return this.each(function() {
-			var $this = $(this);
 
-			var componentChildren = $this.bFindComponents();
-
-			// call the preRemoves
-			$.each(componentChildren, function(idx, childComponent) {
-				processDestroy(childComponent);
-			});
-
-			// do the empty
-			$this.empty();
-
-			// call the postRemoves
-			$.each(componentChildren, function(idx, childComponent) {
-				processPostDestroy(childComponent);
-			});
-		});
-	}
-
-	/**
-	 * Safely remove a HTMLElement and the related bComponent by calling the preRemote and postRemove on every child
-	 * components as well as this component.
-	 * 
-	 * @return what a jquery.remove would return
-	 */
-	$.fn.bRemove = function() {
-
-		return this.each(function() {
-			var $this = $(this);
-			$this.bEmpty();
-
-			if ($this.is("[data-brite-component]")) {
-				var component = $this.data("component");
-				processDestroy(component);
-
-				$this.remove();
-
-				processPostDestroy(component);
-			} else {
-				$this.remove();
-			}
-		});
-
-	}
-
-	function processDestroy(component) {
-		// The if(component) is a safeguard in case destroy gets call twice (issue when clicking fast on
-		// test_brite-02-transition....)
-		if (component) {
-			// TODO: Need to remove the "preRemove" We should support only destroy
-			var destroyFunc = component.destroy || component.preRemove;
-
-			if ($.isFunction(destroyFunc)) {
-				destroyFunc.call(component);
-			}
-		}
-	}
-
-	function processPostDestroy(component) {
-		// The if(component) is a safeguard in case destroy gets call twice (issue when clicking fast on
-		// test_brite-02-transition....)
-		if (component) {
-			// TODO: Need to remove the "preRemove" We should support only postDestroy
-			var postDestoryFunc = component.postDestroy || component.postRemove;
-
-			if ($.isFunction(postDestoryFunc)) {
-				postDestoryFunc.call(component);
-			}
-		}
-	}
 
 })(jQuery);
+
+// -------- /old bComponent APIs ------- //
+// ------------------------------------- //
 
 
 // ------------------------ //
 // ------ brite utils ------ //
 
 (function($) {
+	
+	
+	
+	// default options for brite.whenEach
+	var whenEachOpts = {
+		failOnFirst : true
+	}
+	
+	/**
+	 * Convenient function that resolve each items serially with resolver function. 
+	 * 
+	 * @param {Array}    items:    array values to iterate through
+	 * @param {Function} resolver: will be called with resolver(value,index) and can return the result or a promise of the result.
+	 * @param {Object}   opts: (optional) options with the following values
+	 *                     opts.failOnFirst {boolean} (default: true) if true, will reject on first fail with error object
+	 * 
+	 * @return {Promise} promise that will get resolve with an Array of result of each value
+	 * 
+	 * The promise is resolve with an array of result when success
+	 * 
+	 * The promise is rejected with an array of {success:[true/false],value:[result/error]}
+	 *     
+	 */
+	brite.whenEach = function(items,resolver,opts){
+  	var dfd = $.Deferred();
+  	var results = [];
+  	var i = 0;
+  	
+  	opts = $.extend({},whenEachOpts, opts);
+  	
+  	resolveAndNext();
+  	
+  	function resolveAndNext(){
+  		if (i < items.length){
+  			var item = items[i];
+  			var result = resolver(item,i);
+
+  			// if the result is a promise (but not a jquery object, which is also a promise), then, pipe it
+  			if (typeof result !== "undefined" && result !== null && $.isFunction(result.promise) && !result.jquery){
+  				result.done(function(finalResult){
+  					results.push(finalResult);
+    				i++;
+    				resolveAndNext();
+  				});		
+  				
+  				// if it fails, then, reject
+  				// TODO: needs to support the failOnFirst: true
+  				result.fail(function(ex){
+  					var fails = $.map(function(val,idx){
+  						return {success:true,value:val};
+  					});
+  					fails.push({success:false,value:ex});
+  					dfd.reject(fails);
+  				});
+  				// TODO: need to handle the case the promise fail
+  			}
+  			// if it is a normal object or a jqueryObject, then, just push the value and move to the next
+  			else{
+  				results.push(result);
+  				i++;
+  				resolveAndNext();
+  			}
+  		}
+  		// once we run out
+  		else{
+  			dfd.resolve(results);
+  		}
+  	} 
+  	
+  	return dfd.promise();    		
+  }
+	
+	
 	// Private array of chars to use
 	var CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
 
@@ -1550,6 +1713,7 @@ var brite = brite || {};
 		daoHandler._entityType = entityType;
 		
 		daoObject._entityType = entityType;
+		daoObject._handler = daoHandler;
 
 		$.each(daoHandler, function(k, v) {
 			// if it is a function and not an internalMethods
@@ -1584,6 +1748,10 @@ var brite = brite || {};
 		
 		daoDic[entityType] = daoObject;
 		
+		if ($.isFunction(daoObject.init)){
+			daoObject.init(entityType);
+		}
+		
 		return daoObject;
 	}
 
@@ -1593,9 +1761,9 @@ var brite = brite || {};
 	/**
 	 * Build the arguments for all the brite.dao.on*** events from the arguments
 	 * Can be
-	 * - (events,objectTypes,func,namespace)
+	 * - (objectTypes,actions,func,namespace)
 	 * - (objectTypes,func,namespace)
-	 * - (func,namspace)
+	 * - (func,namespace)
 	 *
 	 * Return an object with
 	 *   .events (with the namespace)
@@ -1617,13 +1785,13 @@ var brite = brite || {};
 			else if (!map.func) {
 				namespace = val;
 			}
-			// if we have the func, but not the objectTypes, this is the objectTypes
-			else if (map.func && typeof map.objectTypes === "undefined") {
-				map.objectTypes = val;
+			// if we have the func, and it is the second argument, it si the actions
+			else if (map.func && i === 1) {
+				map.actions = val;
 			}
-			// if we have the func and objectTypes, then this value is the events
-			else if (map.func && typeof map.objectTypes !== "undefined") {
-				map.events = val;
+			// if we have the func, and it is the first argument, it is objectTypes
+			else if (map.func && i === 0) {
+				map.objectTypes = val;
 			}
 		}
 
@@ -1635,16 +1803,14 @@ var brite = brite || {};
 			       
 		}
 
-		// complete the event
-		if (!map.events) {
-			map.events = _ALL_;
+		
+		// complete the actions
+		if (!map.actions) {
+			map.actions = _ALL_ + "." + namespace;
 		} else {
+			var ns = "." + namespace + " ";
 			// build the events, split by ',', add the namespace, and join back
-			var events = map.events.split(",");
-			$.each(events, function(idx, val) {
-				events[idx] = $.trim(val) + "." + namespace;
-			});
-			map.events = events.join(", ");
+			map.actions = map.actions.split(",").join(ns) + ns;
 		}
 
 		// complete the objectTypes
@@ -1699,8 +1865,8 @@ var brite = brite || {};
 	 * This will trigger on any DAO calls before the dao action is completed (for
 	 * 	asynch daos), hence, the resultPromise property of the daoEvent.
 	 *
-	 * @param events            e.g., "create, list, get" (null for any)
 	 * @param objectTypes       e.g., "User, Task" (null for any)
+	 * @param actions            e.g., "create, list, get" (null for any)
 	 * @param listenerFunction  The function to be called with the daoEvent
 	 *            listenerFunction(event) with event.daoEvent as
 	 *            daoEvent.action
@@ -1708,9 +1874,9 @@ var brite = brite || {};
 	 *            daoEvent.resultPromise
 	 *
 	 */
-	brite.dao.onDao = function(events, objectTypes, listenerFunction, namespace) {
+	brite.dao.onDao = function(objectTypes, actions, listenerFunction, namespace) {
 		var map = buildDaoOnEventParamMap(arguments);
-		$daoDao.on(map.events, map.objectTypes, map.func);
+		$daoDao.on(map.actions, map.objectTypes, map.func);
 		return map.namespace;
 	}
 
@@ -1740,8 +1906,8 @@ var brite = brite || {};
 	 * This will trigger when the dao resolve the result of a particular DAO call.
 	 * This will not trigger in case of a dao failure.
 	 *
-	 * @param events            e.g., "create, list, get" (null for any)
 	 * @param objectTypes       e.g., "User, Task" (null for any)
+	 * @param actions           e.g., "create, list, get" 
 	 * @param listenerFunction  The function to be called with the daoEvent
 	 *            listenerFunction(daoEvent)
 	 *            daoEvent.action
@@ -1751,9 +1917,9 @@ var brite = brite || {};
 	 *            daoEvent.opts
 	 *            daoEvent.result
 	 */
-	brite.dao.onResult = function(events, objectTypes, listenerFunction, namespace) {
+	brite.dao.onResult = function(objectTypes, actions, listenerFunction, namespace) {
 		var map = buildDaoOnEventParamMap(arguments);
-		$daoResult.on(map.events, map.objectTypes, map.func);
+		$daoResult.on(map.actions, map.objectTypes, map.func);
 		return map.namespace;
 	}
 
@@ -1785,12 +1951,12 @@ var brite = brite || {};
 	 * use the brite.dao.onResult which will trigger anytime
 	 *
 	 * @param {String} namespace: the namespace for this event.
-	 * @param {String} events: this dao action names e.g., "create, update" (null to listen to all events)
 	 * @param {String} objectTypes: the object types e.g., "User, Task" (null for any object type);
+	 * @param {String} actions: this dao action names e.g., "create, update" 
 	 */
-	brite.dao.onDataChange = function(events, objectTypes, func, namespace) {
+	brite.dao.onDataChange = function(objectTypes, actions, func, namespace) {
 		var map = buildDaoOnEventParamMap(arguments);
-		$daoDataChange.on(map.events, map.objectTypes, map.func);
+		$daoDataChange.on(map.actions, map.objectTypes, map.func);
 		return map.namespace;
 	}
 
@@ -1835,6 +2001,111 @@ var brite = brite || {};
 })(jQuery);
 // --------- /DAO Support --------- //
 
+
+
+// --------- bEntity --------- //
+(function($) {
+
+	/**
+	 * Return the bEntity {id,type,name,$element} (or a list of such) of the closest html element matching entity type in the data-entity.
+	 * 
+	 * The return value is like: 
+	 * 
+	 * .type     will be the value of the attribute data-entity 
+	 * .id       will be the value of the data-entity-id
+	 * .name     (optional) will be the value of the data-entity-name
+	 * .$el 			will be the $element containing the matching data-entity attribute
+	 *  
+	 * If no entityType, then, return the first entity of the closest html element having a data-b-entity. <br />
+	 * 
+	 * $element.bEntity("User"); // return the closest entity with data-entity="User"
+	 * $element.bEntity(">children","Task"); // return all the data-entity="Task" children from this $element.  
+   * $element.bEntity(">first","Task"); // return the first child entity matching data-entity="Task"
+   * 
+	 * TODO: needs to implement the >children and >first
+	 * 
+	 * @param {String} entity type (optional) the object 
+	 * @return null if not found, the first found entity with {id,type,name,$element}.
+	 */
+	$.fn.bEntity = function(entityType) {
+
+		var i, result = null;
+		// iterate and process each matched element
+		this.each(function() {
+			// ignore if we already found one
+			if (result === null){
+				var $this = $(this);
+				var $sObj;
+				if (entityType) {
+					$sObj = $this.closest("[data-entity='" + entityType + "']");
+				} else {
+					$sObj = $this.closest("[data-entity]");
+				}
+				if ($sObj.length > 0) {
+					result = {
+						type : $sObj.attr("data-entity"),
+						id : $sObj.attr("data-entity-id"),
+						name: $sObj.attr("data-entity-name"),
+						$el : $sObj
+					}
+				}
+			}
+		});
+		
+		return result;
+		
+	};
+
+})(jQuery);
+
+// ------ /bEntity ------ //
+
+// ------ LEGACY jQuery DAO Helper ------ //
+(function($) {
+
+	/**
+	 * Return the objRef {id,type,$element} (or a list of such) of the closest html element matching the objType match the data-obj_type.<br />
+	 * If no objType, then, return the first objRef of the closest html element having a data-obj_type. <br />
+	 *
+	 * @param {String} objType (optional) the object table
+	 * @return null if not found, single object with {id,type,$element} if only one jQuery object, a list of such if this jQuery contain multiple elements.
+	 */
+	$.fn.bObjRef = function(objType) {
+		var resultList = [];
+
+		var obj = null;
+		// iterate and process each matched element
+		this.each(function() {
+			var $this = $(this);
+			var $sObj;
+			if (objType) {
+				$sObj = $this.closest("[data-obj_type='" + objType + "']");
+			} else {
+				$sObj = $this.closest("[data-obj_type]");
+			}
+			if ($sObj.length > 0) {
+				var objRef = {
+					type : $sObj.attr("data-obj_type"),
+					id : $sObj.attr("data-obj_id"),
+					$element : $sObj
+				}
+				resultList.push(objRef);
+			}
+		});
+
+		if (resultList.length === 0) {
+			return null;
+		} else if (resultList.length === 1) {
+			return resultList[0];
+		} else {
+			return resultList;
+		}
+
+	};
+
+})(jQuery);
+
+// ------ /LEGACY jQuery DAO Helper ------ //
 // --------- InMemoryDaoHandler --------- //
 (function($) {
 
@@ -2061,110 +2332,6 @@ var brite = brite || {};
 
 })(jQuery);
 // --------- /InMemoryDaoHandler --------- //
-
-// --------- bEntity --------- //
-(function($) {
-
-	/**
-	 * Return the bEntity {id,type,name,$element} (or a list of such) of the closest html element matching entity type in the data-entity.
-	 * 
-	 * The return value is like: 
-	 * 
-	 * .type     will be the value of the attribute data-entity 
-	 * .id       will be the value of the data-entity-id
-	 * .name     (optional) will be the value of the data-entity-name
-	 * .$element will be the $element containing the matching data-entity attribute
-	 *  
-	 * If no entityType, then, return the first entity of the closest html element having a data-b-entity. <br />
-	 * 
-	 * $element.bEntity("User"); // return the closest entity with data-entity="User"
-	 * $element.bEntity(">children","Task"); // return all the data-entity="Task" children from this $element.  
-   * $element.bEntity(">first","Task"); // return the first child entity matching data-entity="Task"
-   * 
-	 * TODO: needs to implement the >children and >first
-	 * 
-	 * @param {String} entity type (optional) the object 
-	 * @return null if not found, the first found entity with {id,type,name,$element}.
-	 */
-	$.fn.bEntity = function(entityType) {
-
-		var i, result = null;
-		// iterate and process each matched element
-		this.each(function() {
-			// ignore if we already found one
-			if (result === null){
-				var $this = $(this);
-				var $sObj;
-				if (entityType) {
-					$sObj = $this.closest("[data-entity='" + entityType + "']");
-				} else {
-					$sObj = $this.closest("[data-entity]");
-				}
-				if ($sObj.length > 0) {
-					result = {
-						type : $sObj.attr("data-entity"),
-						id : $sObj.attr("data-entity-id"),
-						name: $sObj.attr("data-entity-name"),
-						$element : $sObj
-					}
-				}
-			}
-		});
-		
-		return result;
-		
-	};
-
-})(jQuery);
-
-// ------ /bEntity ------ //
-
-// ------ LEGACY jQuery DAO Helper ------ //
-(function($) {
-
-	/**
-	 * Return the objRef {id,type,$element} (or a list of such) of the closest html element matching the objType match the data-obj_type.<br />
-	 * If no objType, then, return the first objRef of the closest html element having a data-obj_type. <br />
-	 *
-	 * @param {String} objType (optional) the object table
-	 * @return null if not found, single object with {id,type,$element} if only one jQuery object, a list of such if this jQuery contain multiple elements.
-	 */
-	$.fn.bObjRef = function(objType) {
-		var resultList = [];
-
-		var obj = null;
-		// iterate and process each matched element
-		this.each(function() {
-			var $this = $(this);
-			var $sObj;
-			if (objType) {
-				$sObj = $this.closest("[data-obj_type='" + objType + "']");
-			} else {
-				$sObj = $this.closest("[data-obj_type]");
-			}
-			if ($sObj.length > 0) {
-				var objRef = {
-					type : $sObj.attr("data-obj_type"),
-					id : $sObj.attr("data-obj_id"),
-					$element : $sObj
-				}
-				resultList.push(objRef);
-			}
-		});
-
-		if (resultList.length === 0) {
-			return null;
-		} else if (resultList.length === 1) {
-			return resultList[0];
-		} else {
-			return resultList;
-		}
-
-	};
-
-})(jQuery);
-
-// ------ /LEGACY jQuery DAO Helper ------ //
 var brite = brite || {};
 
 /**
