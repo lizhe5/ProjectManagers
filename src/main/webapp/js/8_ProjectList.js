@@ -19,9 +19,9 @@
 				var $e = view.$el;
 				var obj = $(e.currentTarget).bEntity();
 				$e.find(".projectListContain").find("li").removeClass("active");
-				$(this).closest("li").addClass("active");
-				brite.display("MainContent",null, {
-					id : obj.id
+				$(e.currentTarget).closest("li").addClass("active");
+				brite.display("MainContent", null, {
+					id : obj == null ? "" : obj.id
 				});
 			},
 			"btap;.editBtn" : function(e) {
@@ -29,12 +29,14 @@
 				var $e = view.$el;
 				var obj = $(e.currentTarget).bEntity();
 				$e.find(".projectListContain").find("li").removeClass("active");
-				$(this).closest("li").addClass("active");
-				obj.subject = $(this).attr("data-value");
-				editProject(obj);
+				$(e.currentTarget).closest("li").addClass("active");
+				obj.subject = $(e.currentTarget).attr("data-value");
+				editProject.call(view, obj);
 			},
 			"btap;.newBtn" : function(e) {
-				editProject();
+				var view = this;
+				var $e = view.$el;
+				editProject.call(view);
 			},
 
 		},
@@ -51,29 +53,29 @@
 			var view = this;
 			var $e = view.$el;
 
-			refresh.call(view);
+			view.refresh.call(view);
+		},
+		refresh : function(id) {
+			var view = this;
+			var $e = view.$el;
+			brite.dao("Project").list().done(function(projectList) {
+				renderer.render('ProjectList-item', projectList).done(function(html) {
+					$e.find(".projectListContain").html(html);
+					$e.find("[data-entity-id='" + id + "']").addClass("active");
+					if (!id) {
+						var a = $e.find(".projectListContain a");
+						if (a.length > 0) {
+							a = $(a.get(0));
+							a.trigger("btap");
+						};
+					};
+				});
+
+			});
 		}
 
 	});
 	// --------- View Private Methods --------- //
-	function refresh(id) {
-		var view = this;
-		var $e = view.$el;
-		brite.dao("Project").list().done(function(projectList) {
-			renderer.render('ProjectList-item', projectList).done(function(html) {
-				$e.find(".projectListContain").html(html);
-				$e.find("[data-entity-id='" + id + "']").addClass("active");
-				if (!id) {
-					var a = $e.find(".projectListContain a");
-					if (a.length > 0) {
-						a = $(a.get(0));
-						a.trigger("btap");
-					};
-				};
-			});
-
-		});
-	}
 
 	function editProject(project) {
 		var view = this;
@@ -101,14 +103,14 @@
 
 					brite.dao("Project").update(data).done(function(project) {
 						$e.find(".addItem").remove();
-						brite.display("MainContent", {
+						brite.display("MainContent",null, {
 							id : project.id
 						});
 					});
 				} else {
 					brite.dao("Project").create(data).done(function(project) {
 						$e.find(".addItem").remove();
-						brite.display("MainContent", {
+						brite.display("MainContent",null, {
 							id : project.id
 						});
 					});

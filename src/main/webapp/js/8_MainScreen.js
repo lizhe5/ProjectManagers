@@ -1,14 +1,4 @@
 ;(function() {
-
-	/**
-	 * View: MainScreen
-	 *
-	 * Responsibilities:
-	 *   - The Main Screen of the application.
-	 *   - Handle the overall dimension (for now fixed)
-	 */
-
-	// --------- View Registration --------- //
 	brite.registerView("MainScreen", {
 		loadTmpl : true,
 		parent : "#bodyPage"
@@ -37,7 +27,7 @@
 				view.project = daoEvent.result;
 				var p = $(document).bFindComponents("ProjectList");
 				if (p && p.length > 0) {
-					p[0].refresh(c.project.id);
+					p[0].refresh(view.project.id);
 					$e.find(".main-content").empty();
 				}
 			}, view.id);

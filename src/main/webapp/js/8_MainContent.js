@@ -19,6 +19,8 @@
 		events : {
 			//show group panel view
 			"btap;.addBtn" : function(e) {
+				var view = this;
+				var $e = view.$el;
 				$(".subjectWarning").hide();
 				$e.find("input[name='title']").val('');
 				$e.find("input[name='taskId']").val('');
@@ -26,6 +28,9 @@
 			},
 
 			"btap;.showDeleteBtn" : function(e) {
+				var view = this;
+				var $e = view.$el;
+				var obj = $(e.currentTarget);
 				// create the delete-controls element
 				var $controls = $($("#tmpl-MainContent-delControls").html());
 				$e.find(".deleteControl").html($controls);
@@ -43,15 +48,19 @@
 				});
 
 				$e.on("click", ".deleteBtn", function() {
-					brite.dao("Project").remove(c.projectId);
+					brite.dao("Project").remove(view.projectId).done(function() {
+						refreshList();
+					});
 				});
-				$(this).hide();
+				obj.hide();
 			},
 			"btap;.closeBtn" : function(e) {
 				$('#myModal').hide();
 			},
 			"btap;.saveTaskBtn" : function(e) {
-				var projectId = c.projectId;
+				var view = this;
+				var $e = view.$el;
+				var projectId = view.projectId;
 				var id = $('#myModal').find("input[name='taskId']").val();
 				var title = $('#myModal').find("input[name='title']").val();
 				if (title == "") {
@@ -59,21 +68,23 @@
 				};
 				brite.dao("Task").updateTask("Task", id, projectId, title).done(function() {
 					$('#myModal').hide();
-					c.refresh();
+					refresh.call(view);
 				});
 			},
 
 			"btap;.opBtn" : function(e) {
-				var obj = $(this).bEntity();
-				var op = $(this).attr("op");
+				var view = this;
+				var $e = view.$el;
+				var obj = $(e.currentTarget).bEntity();
+				var op = $(e.currentTarget).attr("op");
 				if (op == 'edit') {
-					var title = $(this).attr("data-value");
+					var title = $(e.currentTarget).attr("data-value");
 					$e.find("input[name='title']").val(title);
 					$e.find("input[name='taskId']").val(obj.id);
 					$('#myModal').show();
 				} else {
 					brite.dao("Task").opTask(obj.id, op).done(function() {
-						c.refresh();
+						refresh.call(view);
 					});
 				};
 			},
@@ -105,12 +116,9 @@
 		var view = this;
 		var $e = view.$el;
 		setTimeout(function() {
-			brite.dao("Project").getProjectById(view.projectId).done(function(project) {
-				renderer.render('MainContent').done(function(html) {
-					$e.html(html);
+			brite.display("MainContent", null, {
+					id : view.projectId
 				});
-
-			});
 		}, 100)
 	}
 
