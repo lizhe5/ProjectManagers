@@ -1,14 +1,23 @@
-var app = app || {};
+
 // --------- Remote Dao --------- //
 (function($) {
 
-	function RemoteDao() {
+	function RemoteDao(entityType) {
+        this._entityType = entityType;
 	}
+
+
 
 	// ------ DAO Interface Implementation ------ //
 	RemoteDao.prototype.getIdName = function() {
 		return "id";
-	}
+	};
+
+    // --------- DAO Info Methods --------- //
+    RemoteDao.prototype.entityType = function () {
+        return this._entityType;
+    };
+    // --------- DAO Info Methods --------- //
 
 
 	RemoteDao.prototype.get = function(id) {
@@ -83,7 +92,7 @@ var app = app || {};
 		};
 		var dfd = $.ajax({
 			type : "POST",
-			url : contextPath +"/daoSave.do",
+			url : contextPath + "/daoSave.do",
 			data : reqData,
 			dataType : "json"
 		}).pipe(function(val) {
@@ -110,7 +119,7 @@ var app = app || {};
 
 		return $.ajax({
 			type : "POST",
-			url : contextPath +"/daoSave.do",
+			url :contextPath + "/daoSave.do",
 			data : reqData,
 			dataType : "json"
 		}).pipe(function(val) {
@@ -133,7 +142,7 @@ var app = app || {};
 
 		var dfd = $.ajax({
 			type : "POST",
-			url : contextPath +"/daoDelete.do",
+			url : contextPath + "/daoDelete.do",
 			data : reqData,
 			dataType : "json"
 		}).pipe(function(val) {
@@ -142,7 +151,7 @@ var app = app || {};
 
 		return dfd.promise();
 	}
-	
+
 	RemoteDao.prototype.removeMany = function(ids) {
 		var reqData = {
 			objType : this._entityType
@@ -151,7 +160,7 @@ var app = app || {};
 
 		var dfd = $.ajax({
 			type : "POST",
-			url : contextPath +"/daoDeleteMany.do",
+			url : contextPath + "/daoDeleteMany.do",
 			data : reqData,
 			dataType : "json"
 		}).pipe(function(val) {

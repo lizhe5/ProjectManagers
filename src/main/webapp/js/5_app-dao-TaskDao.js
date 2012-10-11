@@ -1,3 +1,4 @@
+var app = app || {};
 (function($) {
 	//-------- Remote dao ---------//
 	function RemoteTaskDao() {

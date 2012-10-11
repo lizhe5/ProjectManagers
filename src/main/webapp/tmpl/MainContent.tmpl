@@ -23,7 +23,7 @@
 	<tbody class="taskListContain">
 	{{if taskList}}
 	{{for taskList}}
-	<tr>
+	<tr {{if status=='End'}}class="info"{{/if}}>
 	<td>{{:id}}</td>
 	<td>{{:titleView}}</td>
 	<td>{{:startTimeView}}</td>
