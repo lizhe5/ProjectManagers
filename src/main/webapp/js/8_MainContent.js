@@ -2,7 +2,7 @@
 	brite.registerView("MainContent", {
 		loadTmpl : true,
 		emptyParent : true,
-		parent : ".main-content"
+		parent : ".MainView-panels-inner"
 	}, {
 		create : function(data, config) {
 			var view = this;

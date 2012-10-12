@@ -20,8 +20,9 @@
 				var obj = $(e.currentTarget).bEntity();
 				$e.find(".projectListContain").find("li").removeClass("active");
 				$(e.currentTarget).closest("li").addClass("active");
-				brite.display("MainContent", null, {
-					id : obj == null ? "" : obj.id
+				var id = obj == null ? "" : obj.id;
+				$(e.currentTarget).trigger("DO_SELECT_PROJECT", {
+					id : id
 				});
 			},
 			"btap;.editBtn" : function(e) {
@@ -42,7 +43,22 @@
 		},
 
 		docEvents : {
-			//bind event with refresh contacts
+			"DO_SELECT_PROJECT" : function(event, extra) {
+				var view = this;
+				var id = extra.id; 
+				
+				view.$el.find("li.sel").removeClass("sel");
+				view.$el.find("i.icon-folder-open").removeClass("icon-folder-open").addClass("icon-folder-close");
+
+				// select the li
+				var $selectedLi = view.$element.find("li[data-obj_id='" + id + "']");
+				$selectedLi.addClass("sel");
+				$selectedLi.find("i.icon-folder-close").removeClass("icon-folder-close").addClass("icon-folder-open");
+
+				// keep that for dataChangeEvent (to keep the item selected)
+				view.selectedFolderId = id;
+			}
+
 		},
 
 		daoEvents : {
@@ -103,14 +119,14 @@
 
 					brite.dao("Project").update(data).done(function(project) {
 						$e.find(".addItem").remove();
-						brite.display("MainContent",null, {
+						brite.display("MainContent", null, {
 							id : project.id
 						});
 					});
 				} else {
 					brite.dao("Project").create(data).done(function(project) {
 						$e.find(".addItem").remove();
-						brite.display("MainContent",null, {
+						brite.display("MainContent", null, {
 							id : project.id
 						});
 					});
